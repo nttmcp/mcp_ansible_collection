@@ -17,13 +17,13 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- your name <example@domain.com>
+- Ken Sinfield <ken.sinfield@cis.ntt.com>
 
 
 ### OPTIONAL but strongly recommended
 
 # A short summary description of the collection
-description: your collection description
+description: Ansible Modules for NTT Limited's MCP Cloud Control API
 
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
@@ -36,22 +36,26 @@ license_file: ''
 
 # A list of tags you want to associate with the collection for indexing/searching. A tag name has the same character
 # requirements as 'namespace' and 'name'
-tags: []
+tags:
+  - NTT
+  - "NTT Ltd"
+  - MCP
+  - cloud
 
 # Collections that this collection requires to be installed for it to be usable. The key of the dict is the
 # collection label 'namespace.name'. The value is a version range
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
-dependencies: {}
+#dependencies: {}
 
 # The URL of the originating SCM repository
-repository: http://example.com/repository
+repository: https://github.com/nttmcp/mcp_collection
 
 # The URL to any online docs
-documentation: http://docs.example.com
+documentation: https://docs.mcp-services.net/display/CCD/MCP+2.0
 
 # The URL to the homepage of the collection/project
-homepage: http://example.com
+#homepage: http://example.com
 
 # The URL to the collection issue tracker
-issues: http://example.com/issue/tracker
+issues: https://github.com/nttmcp/mcp_collection/issues
