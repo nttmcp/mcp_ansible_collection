@@ -29,7 +29,7 @@ try:
     HAS_IPADDRESS = True
 except ImportError:
     HAS_IPADDRESS = False
-from ansible.module_utils.ntt_mcp.ntt_mcp_config import API_ENDPOINTS
+from ansible_collections.nttmcp.mcp.plugins.module_utils.config import API_ENDPOINTS
 
 # Python3 workaround for unicode function so the same code can be used with ipaddress later
 try:
@@ -48,7 +48,7 @@ def INT_TO_IP(i):
 
 def utils_check_imports():
     """
-    Check if the required Python modules for ntt_mcp_utils are installed
+    Check if the required Python modules for utils are installed
     """
     if not HAS_CONFIGPARSER:
         raise ImportError('Missing Python module: configparser')
@@ -148,7 +148,7 @@ def generate_password():
     return pwd_string
 
 
-def get_ntt_mcp_regions():
+def get_regions():
     """
     Return a list of Cloud Control regions
     """

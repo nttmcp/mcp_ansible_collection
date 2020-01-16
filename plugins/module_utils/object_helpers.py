@@ -9,7 +9,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.module_utils.ntt_mcp.ntt_mcp_utils import compare_json
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import compare_json
 
 
 def fw_update_dict(fw_rule):

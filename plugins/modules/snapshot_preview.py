@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,11 +13,11 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_snapshot_preview
+module: snapshot_preview
 short_description: Create and migrate local and remote Snapshot Preview servers
 description:
     - Create and migrate local and remote Snapshot Preview servers
@@ -24,7 +25,7 @@ description:
     - Documentation for creating a Preview server via the Cloud Control UI https://docs.mcp-services.net/x/GIBk
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -150,10 +151,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Create (but don't migrate) a Preview Server in the same datacenter with NICs disconnected
-    ntt_mcp_snapshot_preview:
+    snapshot_preview:
       region: na
       datacenter: NA9
       id: 112b7faa-ffff-ffff-ffff-dc273085cbe4
@@ -163,7 +166,7 @@ EXAMPLES = '''
       migrate: True
 
   - name: Create and migrate a Replicated Preview Server in a remote datacenter with NICs connected
-    ntt_mcp_snapshot_preview:
+    snapshot_preview:
       region: na
       datacenter: NA12
       network_domain: My_Remote_CND
@@ -196,8 +199,8 @@ msg:
 '''
 from time import sleep
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 CORE = {
     'region': None,
@@ -248,7 +251,7 @@ def create_preview_server(module, client, replica, networks):
                 wait_for_snapshot(module, client, server_id, CORE.get('start'))
             module.exit_json(changed=True, msg='The Snapshot Preview Server has successfully been deployed')
         module.exit_json(changed=True, msg='The deployment process is in progress. '
-                         'Check the status manually or use ntt_mcp_server_info')
+                         'Check the status manually or use server_info')
     except NTTMCPAPIException as e:
         module.fail_json(msg='Could not create the Snapshot Preview Server - {0}'.format(e))
 
@@ -291,7 +294,7 @@ def check_replica_input(module, client):
                          'provided when creating a remote preview server from a replicated snapshot')
     if len(networks) != len(snapshot_nics):
         module.fail_json(msg='The list of networks in the arguments ({0}) must equal the number of NICs configured '
-                         'within the snapshot ({1}). Use ntt_mcp_snapshot_info to view the snapshot configuration '
+                         'within the snapshot ({1}). Use snapshot_info to view the snapshot configuration '
                          'including the list of NICS.'.format(len(networks), len(snapshot_nics)))
     try:
         for nic in networks:
@@ -404,9 +407,9 @@ def main():
         module.fail_json(msg='{0}'.format(e))
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')

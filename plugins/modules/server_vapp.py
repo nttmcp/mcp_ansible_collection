@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,19 +13,19 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_server_vapp
+module: server_vapp
 short_description: Enable/Disable and set/delete vApp properties on a server
 description:
     - Enable/Disable and set/delete vApp properties on a server
     - https://docs.mcp-services.net/x/qIAkAQ
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -163,10 +164,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Enable and Set vApp properties on a server
-    ntt_mcp_server_vapp:
+    server_vapp:
       region: na
       datacenter: NA12
       network_domain: myCND
@@ -194,7 +197,7 @@ EXAMPLES = '''
           value: cool_password
 
   - name: Update a property
-    ntt_mcp_server_vapp:
+    server_vapp:
       region: na
       datacenter: NA12
       network_domain: myCND
@@ -213,7 +216,7 @@ EXAMPLES = '''
           value: new_cool_password
 
   - name: Delete a property
-    ntt_mcp_server_vapp:
+    server_vapp:
       region: na
       datacenter: NA12
       network_domain: myCND
@@ -223,7 +226,7 @@ EXAMPLES = '''
       state: absent
 
   - name: Disable vApp completely and remove all properties
-    ntt_mcp_server_vapp:
+    server_vapp:
       region: na
       datacenter: NA12
       network_domain: myCND
@@ -305,8 +308,8 @@ from time import sleep
 import ast
 from operator import itemgetter
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, compare_json
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, compare_json
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def validate_vapp_args(module, client):
@@ -523,9 +526,9 @@ def main():
     server_id = None
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')

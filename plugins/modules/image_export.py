@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,12 +13,12 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_image_export
+module: image_export
 short_description: Export a customer image to an OVF
 description:
     - Export a customer image in Cloud Control to an OVF for download
@@ -25,7 +26,7 @@ description:
     - https://docs.mcp-services.net/x/rgMk
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -75,10 +76,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Export an image from NA9
-    ntt_mcp_image_export:
+    image_export:
       region: na
       datacenter: NA9
       name: myImage
@@ -95,8 +98,8 @@ msg:
 
 from time import sleep
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def wait_for_image_export(module, client, datacenter, image_name):
@@ -165,9 +168,9 @@ def main():
     image = None
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')

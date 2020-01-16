@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,18 +13,18 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_server
+module: server
 short_description: Create, Update and Delete Servers
 description:
     - Create, Update and Delete Servers
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -60,7 +61,7 @@ options:
     image:
         description:
             - The name of the Image to use whend creating a new server
-            - Use ntt_mcp_infrastructure -> state=get_image to get a list
+            - Use infrastructure -> state=get_image to get a list
             - of that available images
         required: false
         type: str
@@ -330,10 +331,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Create a server
-    ntt_mcp_server:
+    server:
       region: na
       datacenter: NA9
       name: my_server_01
@@ -365,7 +368,7 @@ EXAMPLES = '''
     state: present
 
   - name: Update a server
-    ntt_mcp_server:
+    server:
       region: na
       datacenter: NA9
       network_domain: my_cnd
@@ -380,7 +383,7 @@ EXAMPLES = '''
       state: present
 
   - name: Delete a server
-    ntt_mcp_server:
+    server:
       region: na
       datacenter: NA9
       name: my_server_01
@@ -388,7 +391,7 @@ EXAMPLES = '''
       state: absent
 
   - name: Send a server a Start/Stop/Reboot command and wait for VMWare Tools to be running
-    ntt_mcp_server:
+    server:
       region: na
       datacenter: NA9
       network_domain: APITEST
@@ -763,10 +766,10 @@ import traceback
 from time import sleep
 from copy import deepcopy
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, return_object, generate_password, compare_json
-from ansible.module_utils.ntt_mcp.ntt_mcp_config import (SERVER_STATES, VARIABLE_IOPS, IOPS_MULTIPLIER, DISK_CONTROLLER_TYPES,
-                                                         MAX_IOPS_PER_GB, MAX_DISK_SIZE, MAX_DISK_IOPS)
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, return_object, generate_password, compare_json
+from ansible_collections.nttmcp.mcp.plugins.module_utils.config import (SERVER_STATES, VARIABLE_IOPS, IOPS_MULTIPLIER, DISK_CONTROLLER_TYPES,
+                                                                        MAX_IOPS_PER_GB, MAX_DISK_SIZE, MAX_DISK_IOPS)
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 CORE = {
@@ -900,7 +903,7 @@ def create_server(module, client):
                 if 'privateIpv4' in nic:
                     new_nic['privateIpv4'] = nic['privateIpv4']
                 elif 'vlan' in nic:
-                    new_nic['vlanId'] = client.get_vlan_by_name(name=network['nic']['vlan'],
+                    new_nic['vlanId'] = client.get_vlan_by_name(name=nic.get('vlan'),
                                                                 datacenter=module.params['datacenter'],
                                                                 network_domain_id=(params['networkInfo']['networkDomainId']))['id']
                 else:
@@ -908,7 +911,7 @@ def create_server(module, client):
                 additional_nic.append(new_nic)
             params['networkInfo']['additionalNic'] = additional_nic
     except (KeyError, IndexError, NTTMCPAPIException) as e:
-        module.fail_json(msg='{0}'.format(e))
+        module.fail_json(msg='Failed to determine NIC configuration: {0}'.format(e))
 
     network_domain_id = params['networkInfo']['networkDomainId']
 
@@ -1448,9 +1451,9 @@ def main():
     server = {}
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')

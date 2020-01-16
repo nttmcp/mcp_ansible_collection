@@ -19,8 +19,8 @@ try:
     HAS_IPADDRESS = True
 except ImportError:
     HAS_IPADDRESS = False
-from ansible.module_utils.ntt_mcp.ntt_mcp_config import (HTTP_HEADERS, API_VERSION, API_ENDPOINTS, DEFAULT_REGION)
-from ansible.module_utils.ntt_mcp.ntt_mcp_utils import get_ip_version, IP_TO_INT, INT_TO_IP
+from ansible_collections.nttmcp.mcp.plugins.module_utils.config import (HTTP_HEADERS, API_VERSION, API_ENDPOINTS, DEFAULT_REGION)
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_ip_version, IP_TO_INT, INT_TO_IP
 
 # Python3 workaround for unicode function so the same code can be used with ipaddress later
 try:
@@ -72,7 +72,7 @@ class NTTMCPClient():
 
     def check_imports(self):
         """
-        Check if the required Python modules for ntt_mcp_provider are installed
+        Check if the required Python modules for provider are installed
         """
         if not HAS_REQUESTS:
             raise NTTMCPAPIException('Missing Python module: requests')
@@ -690,9 +690,11 @@ class NTTMCPClient():
             raise NTTMCPAPIException('A valid value for datacenter is required')
         else:
             params['datacenterId'] = datacenter
-        if network_domain_id is None:
-            raise NTTMCPAPIException('A valid value for network_domain is required')
-        else:
+        # if network_domain_id is None:
+        #    raise NTTMCPAPIException('A valid value for network_domain is required')
+        # else:
+        #    params['networkDomainId'] = network_domain_id
+        if network_domain_id:
             params['networkDomainId'] = network_domain_id
         if vlan_id:
             params['vlanId'] = vlan_id
@@ -3007,7 +3009,7 @@ class NTTMCPClient():
         :kw name: The node name
         :kw description: the node descrition
         :kw ip_address: The IPv4 or IPv6 address of the Node
-        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.ntt_mcp_config
+        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.config
         :kw health_monitor: The UUID for a node compatible health monitoring profile
         :kw connection_limit: The maximum number of simultaneous connections permitted on the Node. Should be an integer between 1 and 100,000
         :kw connection_rate_limit: The amount of new connections permitted every second. Should be an integer between 1 and 4,000.
@@ -3042,7 +3044,7 @@ class NTTMCPClient():
         """
         :kw node_id: The UUID of the node to be updated
         :kw description: the node description
-        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.ntt_mcp_config
+        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.config
         :kw health_monitor: The UUID for a node compatible health monitoring profile
         :kw no_health_monitor: If True this will remove any configured health monitoring profiles on the node
         :kw connection_limit: The maximum number of simultaneous connections permitted on the Node. Should be an integer between 1 and 100,000
@@ -3171,7 +3173,7 @@ class NTTMCPClient():
         :kw description: The pool description
         :kw ip_address: The IPv4 or IPv6 address of the Node
         :kw load_balancing: The load balancing method for the node. Valid values are stored in LOAD_BALANCING_METHODS
-                            in ansible.module_utils.ntt_mcp_config
+                            in ansible.module_utils.config
         :kw health_monitor: List of UUID for a pool compatible health monitoring profiles
                             (maximum of 2 IDs in the list)
         :kw service_down_action: When a Pool Member fails to respond to a Health Monitor, the system marks that Pool
@@ -3209,7 +3211,7 @@ class NTTMCPClient():
         :kw vip_pool_id: The UUID of the VIP Pool
         :kw description: The description of the VIP Pool
         :kw load_balancing: The load balancing method for the node. Valid values are stored in LOAD_BALANCING_METHODS
-                            in ansible.module_utils.ntt_mcp_config
+                            in ansible.module_utils.config
         :kw health_monitor: List of UUID for a pool compatible health monitoring profiles
                             (maximum of 2 IDs in the list)
         :kw no_health_monitor: If this is True all health monitoring profiles will be removed from the VIP Pool
@@ -3294,7 +3296,7 @@ class NTTMCPClient():
         :kw vip_pool_id: The UUID of the VIP Pool
         :kw vip_node_id: The UUID of the Node to be added
         :kw port: The TCP/UDP port to be used
-        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.ntt_mcp_config
+        :kw status: The status for the node. Valid values are stored in VIP_NODE_STATES in ansible.module_utils.config
         :returns: The UUID of the new VIP Pool Member
         """
         params = {}

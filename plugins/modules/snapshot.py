@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,17 +13,17 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_snapshot
+module: snapshot
 short_description: Initiate, update or delete a manual snapshot on a server
 description:
     - Initiate a manual snapshot on a server
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -43,6 +44,11 @@ options:
     server:
         description:
             - The name of a server to enable Snapshots on
+        required: false
+        type: str
+    server_id:
+        description:
+            - The UUID of a server to enable Snapshots on
         required: false
         type: str
     id:
@@ -73,23 +79,25 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Initiate a manual snapshot
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       server: myServer
       description: A random snapshot
 
   - name: Update the metadata on a manual snapshot
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       id: 112b7faa-ffff-ffff-ffff-dc273085cbe4
       description: A random snapshot description
 
   - name: Delete a manual snapshot
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       id: 112b7faa-ffff-ffff-ffff-dc273085cbe4
       state: absent
@@ -108,8 +116,8 @@ msg:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def main():
@@ -123,6 +131,7 @@ def main():
             datacenter=dict(required=False, type='str'),
             network_domain=dict(required=False, default=None, type='str'),
             server=dict(required=False, default=None, type='str'),
+            server_id=dict(required=False, default=None, type='str'),
             description=dict(required=False, default=None, type='str'),
             id=dict(required=False, default=None, type='str'),
             state=dict(default='present', choices=['present', 'absent'])
@@ -135,6 +144,7 @@ def main():
     network_domain_name = module.params.get('network_domain')
     datacenter = module.params.get('datacenter')
     server_name = module.params.get('server')
+    server_id = module.params.get('server_id')
 
     try:
         credentials = get_credentials(module)
@@ -142,9 +152,9 @@ def main():
         module.fail_json(msg='{0}'.format(e))
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')
@@ -175,11 +185,16 @@ def main():
 
                 # Check if the Server exists based on the supplied name
                 try:
-                    server = client.get_server_by_name(datacenter=datacenter,
-                                                       network_domain_id=network_domain_id,
-                                                       name=server_name)
+                    if server_name is None and server_id is None:
+                        module.fail_json(msg='A server valid value for server or server_id is required')
+                    if server_id:
+                        server = client.get_server_by_id(server_id=server_id)
+                    else:
+                        server = client.get_server_by_name(datacenter=datacenter,
+                                                           network_domain_id=network_domain_id,
+                                                           name=server_name)
                     if not server.get('id'):
-                        raise NTTMCPAPIException('No server found for {0}'.format(server_name))
+                        raise NTTMCPAPIException('No server found for {0}'.format(server_name or server_id))
                 except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
                     module.fail_json(msg='Could not locate any existing server - {0}'.format(e))
 

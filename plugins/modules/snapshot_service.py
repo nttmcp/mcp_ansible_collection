@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,11 +13,11 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_snapshot_service
+module: snapshot_service
 short_description: Enable/Disable and Update the Snapshot Service on a server
 description:
     - Enable/Disable and Update the Snapshot Service on a server
@@ -25,7 +26,7 @@ description:
     - already disabled.
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -48,14 +49,19 @@ options:
             - The name of a server to enable Snapshots on
         required: true
         type: str
+    server_id:
+        description:
+            - The UUID of a server to enable Snapshots on. Takes precendence over a server name
+        required: true
+        type: str
     plan:
         description:
-            - The name of a desired Service Plan. Use ntt_mcp_snapshot_info to get a list of valid plans.
+            - The name of a desired Service Plan. Use snapshot_info to get a list of valid plans.
         required: false
         type: str
     window:
         description:
-            - The starting hour for the snapshot window (24 hour notation). Use ntt_mcp_snapshot_info to find a window.
+            - The starting hour for the snapshot window (24 hour notation). Use snapshot_info to find a window.
         required: false
         type: int
     replication:
@@ -84,10 +90,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Enable Snapshots at 8am
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -97,7 +105,7 @@ EXAMPLES = '''
       state: present
 
   - name: Enable Snapshots at 8am and enable replication
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -107,7 +115,7 @@ EXAMPLES = '''
       replication: NA12
 
   - name: Update Snapshot config on a server
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -116,7 +124,7 @@ EXAMPLES = '''
       window: 10
 
   - name: Add replication to the service
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -124,7 +132,7 @@ EXAMPLES = '''
       replication: NA12
 
   - name: Disable replication only
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -133,7 +141,7 @@ EXAMPLES = '''
       state: absent
 
   - name: Disable Snapshots Completely
-    ntt_mcp_snapshot_service:
+    snapshot_service:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -150,8 +158,8 @@ msg:
 from time import sleep
 from copy import deepcopy
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, compare_json
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, compare_json
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def enable_snapshot(module, client, server_id, plan, window_id):
@@ -343,7 +351,8 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(required=True, type='str'),
-            server=dict(required=True, type='str'),
+            server=dict(required=False, type='str'),
+            server_id=dict(required=False, type='str'),
             plan=dict(required=False, default=None, type='str'),
             window=dict(required=False, default=None, type='int'),
             replication=dict(required=False, default=None, type='str'),
@@ -360,16 +369,15 @@ def main():
     datacenter = module.params.get('datacenter')
     network_domain_name = module.params.get('network_domain')
     server_name = module.params.get('server')
+    server_id = module.params.get('server_id')
     plan = module.params.get('plan')
     window_id = None
     network_domain_id = None
-    server_id = None
-    server = None
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')
@@ -388,18 +396,23 @@ def main():
 
     # Check if the Server exists based on the supplied name
     try:
-        server = client.get_server_by_name(datacenter=datacenter,
-                                           network_domain_id=network_domain_id,
-                                           name=server_name)
+        if server_name is None and server_id is None:
+            module.fail_json(msg='A valid value for server or server_id is required')
+        if server_id:
+            server = client.get_server_by_id(server_id=server_id)
+        else:
+            server = client.get_server_by_name(datacenter=datacenter,
+                                               network_domain_id=network_domain_id,
+                                               name=server_name)
         if not server.get('id'):
-            raise NTTMCPAPIException('No server object found for {0}'.format(server_name))
+            raise NTTMCPAPIException('No server object found for {0}'.format(server_name or server_id))
         server_id = server.get('id')
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
         module.fail_json(msg='Could not locate any existing server - {0}'.format(e))
 
     if state == 'present':
         # Check for required arguments
-        if (not module.params.get('plan') or not module.params.get('window')) and not module.params.get('replication'):
+        if (module.params.get('plan') is None or module.params.get('window') is None) and module.params.get('replication') is None:
             module.fail_json(msg='plan and window are required arguments')
         # Attempt to find the Window for the specified Service Plan
         if not module.check_mode and (module.params.get('window') or module.params.get('plan')):

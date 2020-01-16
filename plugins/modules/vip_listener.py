@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,19 +13,19 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_vip_listener
+module: vip_listener
 short_description: Create, update and delete VIP Virtual Listeners
 description:
     - Create, update and delete VIP Virtual Listeners
     - It is quicker to use the option "id" to locate the VIP Listener if the UUID is known rather than search by name
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -177,10 +178,12 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Create a VIP Listener
-    ntt_mcp_vip_listener:
+    vip_listener:
       region: na
       datacenter: NA9
       network_domain: "my_network_domain"
@@ -201,7 +204,7 @@ EXAMPLES = '''
       state: present
 
   - name: Update a specific VIP Listener - Remove the fallback persistence profile and irules from the example above
-    ntt_mcp_vip_listener:
+    vip_listener:
       region: na
       datacenter: NA9
       network_domain: "my_network_domain"
@@ -219,7 +222,7 @@ EXAMPLES = '''
       state: present
 
   - name: Delete a specific VIP Pool by name
-    ntt_mcp_vip_listener:
+    vip_listener:
       region: na
       datacenter: NA9
       network_domain: "my_network_domain"
@@ -227,7 +230,7 @@ EXAMPLES = '''
       state: absent
 
   - name: Delete a specific VIP Pool by id
-    ntt_mcp_vip_listener:
+    vip_listener:
       region: na
       datacenter: NA9
       network_domain: "my_network_domain"
@@ -250,9 +253,9 @@ msg:
 
 from copy import deepcopy
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, compare_json
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
-from ansible.module_utils.ntt_mcp.ntt_mcp_config import (VIP_LISTENER_TYPES, VIP_LISTENER_PRESERVATION, VIP_LISTENER_OPTOMIZATION)
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, compare_json
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.config import (VIP_LISTENER_TYPES, VIP_LISTENER_PRESERVATION, VIP_LISTENER_OPTOMIZATION)
 
 
 def get_optomization_profile(module):
@@ -599,9 +602,9 @@ def main():
     v_listener = None
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     # Check port input value
     if state == 'present':

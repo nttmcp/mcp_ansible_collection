@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,17 +13,17 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_snapshot_info
+module: snapshot_info
 short_description: List/Get information about Snapshots
 description:
     - List/Get information about Snapshots
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -45,9 +46,14 @@ options:
             - The name of a server to enable Snapshots on
         required: false
         type: str
+    server_id:
+        description:
+            - The UUID of a server to enable Snapshots on
+        required: false
+        type: str
     plan:
         description:
-            - The name of a desired Service Plan. Use ntt_mcp_snapshot_info to get a list of valid plans.
+            - The name of a desired Service Plan. Use snapshot_info to get a list of valid plans.
         required: false
         type: str
     type:
@@ -64,7 +70,7 @@ options:
     window:
         description:
             - The starting hour for the snapshot window/window (24 hour notation).
-            - Use ntt_mcp_snapshot_info to find a window.
+            - Use snapshot_info to find a window.
         required: false
         type: int
     slots_available:
@@ -82,29 +88,31 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: List Snapshot Windows
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       plan: ONE_MONTH
 
   - name: Get a specific Snapshot Window for 8am
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       plan: ONE_MONTH
       window: 8
 
   - name: List Snapshot Plans
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       type: plan
 
   - name: Get the Snapshot service configuration for a server
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -112,7 +120,7 @@ EXAMPLES = '''
       type: server
 
   - name: Get a list of Snapshots for a configured server
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       network_domain: my_network_domain
@@ -453,8 +461,8 @@ data:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, return_object
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, return_object
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def get_network_domain_id(module, client):
@@ -486,14 +494,20 @@ def get_server(module, client, network_domain_id):
     """
     datacenter = module.params.get('datacenter')
     server_name = module.params.get('server')
+    server_id = module.params.get('server_id')
 
     # Check if the Server exists based on the supplied name
     try:
-        server = client.get_server_by_name(datacenter=datacenter,
-                                           network_domain_id=network_domain_id,
-                                           name=server_name)
+        if server_name is None and server_id is None:
+            module.fail_json(msg='A server valid value for server or server_id is required')
+        if server_id:
+            server = client.get_server_by_id(server_id=server_id)
+        else:
+            server = client.get_server_by_name(datacenter=datacenter,
+                                               network_domain_id=network_domain_id,
+                                               name=server_name)
         if not server.get('id'):
-            raise NTTMCPAPIException('No server found for {0}'.format(server_name))
+            raise NTTMCPAPIException('No server found for {0}'.format(server_name or server_id))
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
         module.fail_json(msg='Could not locate any existing server - {0}'.format(e))
     return server
@@ -549,6 +563,7 @@ def main():
             type=dict(required=False, default='window', choices=['window', 'server', 'plan', 'snapshot']),
             network_domain=dict(required=False, default=None, type='str'),
             server=dict(required=False, default=None, type='str'),
+            server_id=dict(required=False, default=None, type='str')
         ),
         supports_check_mode=True
     )
@@ -563,9 +578,9 @@ def main():
     snapshot_type = module.params.get('type')
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')

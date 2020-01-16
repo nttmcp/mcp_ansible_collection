@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,17 +13,17 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_snapshot_restore
+module: snapshot_restore
 short_description: Initiate or delete a manual snapshot on a server
 description:
     - Initiate a manual snapshot on a server
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -82,17 +83,19 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: Initiate a manual snapshot
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       datacenter: NA9
       server: myServer
       description: A random snapshot
 
   - name: Delete a manual snapshot
-    ntt_mcp_snapshot_info:
+    snapshot_info:
       region: na
       id: 112b7faa-ffff-ffff-ffff-dc273085cbe4
       state: A random snapshot
@@ -112,8 +115,8 @@ msg:
 
 from time import sleep
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def wait_for_snapshot(module, client, server_id):
@@ -186,9 +189,9 @@ def main():
         module.fail_json(msg='{0}'.format(e))
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')
@@ -216,7 +219,7 @@ def main():
             wait_for_snapshot(module, client, server_id)
             module.exit_json(changed=True, msg='The file/directory have been successfully restored')
         module.exit_json(changed=True, msg='The restoration process is in progress. '
-                         'Check the status manually or use ntt_mcp_server_info')
+                         'Check the status manually or use server_info')
 
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
         module.fail_json(msg='Error restoring the file: {0}'.format(e))

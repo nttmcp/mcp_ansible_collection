@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
+#
 # Author: Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -12,18 +13,18 @@ __metaclass__ = type
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
-    'supported_by': 'community'
+    'supported_by': 'NTT Ltd.'
 }
 
 DOCUMENTATION = '''
 ---
-module: ntt_mcp_server_info
+module: server_info
 short_description: Get and List Servers
 description:
     - Get and List Servers
 version_added: "2.10"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
     region:
         description:
@@ -39,7 +40,7 @@ options:
     network_domain:
         description:
             - The name of the Cloud Network Domain
-        required: true
+        required: false
         type: str
     vlan:
         description:
@@ -61,16 +62,18 @@ requirements:
 EXAMPLES = '''
 - hosts: 127.0.0.1
   connection: local
+  collections:
+    - nttmcp.mcp
   tasks:
 
   - name: List all servers
-    ntt_mcp_server_info:
+    server_info:
       region: na
       datacenter: NA9
       network_domain: xxxx
 
   - name: Get a server
-    ntt_mcp_server_info:
+    server_info:
       region: na
       datacenter: NA9
       network_domain: xxxx
@@ -427,8 +430,8 @@ data:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.NTTC-CIS.mcp.plugins.module_utils.mcp_utils import get_credentials, get_ntt_mcp_regions, return_object
-from ansible.module_utils.ntt_mcp.ntt_mcp_provider import NTTMCPClient, NTTMCPAPIException
+from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_credentials, get_regions, return_object
+from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
 def main():
@@ -441,9 +444,10 @@ def main():
         argument_spec=dict(
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
-            network_domain=dict(required=True, type='str'),
+            network_domain=dict(required=False, type='str'),
             vlan=dict(default=None, required=False, type='str'),
-            name=dict(required=False, type='str')
+            name=dict(required=False, type='str'),
+            id=dict(required=False, type='str')
         ),
         supports_check_mode=True
     )
@@ -454,14 +458,16 @@ def main():
         module.fail_json(msg='{0}'.format(e))
     return_data = return_object('server')
     name = module.params.get('name')
+    server_id = module.params.get('id')
     datacenter = module.params.get('datacenter')
     network_domain_name = module.params.get('network_domain')
     vlan_name = module.params.get('vlan')
+    network_domain_id = vlan_id = None
 
     # Check the region supplied is valid
-    ntt_mcp_regions = get_ntt_mcp_regions()
-    if module.params.get('region') not in ntt_mcp_regions:
-        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(ntt_mcp_regions))
+    regions = get_regions()
+    if module.params.get('region') not in regions:
+        module.fail_json(msg='Invalid region. Regions must be one of {0}'.format(regions))
 
     if credentials is False:
         module.fail_json(msg='Could not load the user credentials')
@@ -475,7 +481,10 @@ def main():
     try:
         if network_domain_name:
             network_domain = client.get_network_domain_by_name(name=network_domain_name, datacenter=datacenter)
-        if not network_domain:
+            network_domain_id = network_domain.get('id')
+        else:
+            network_domain_id = None
+        if network_domain_name and not network_domain:
             module.fail_json(msg='Failed to locate the Cloud Network Domain - {0}'.format(network_domain_name))
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException):
         module.fail_json(msg='Failed to locate the Cloud Network Domain - {0}'.format(network_domain_name))
@@ -483,26 +492,26 @@ def main():
     # Get the VLAN object based on the supplied name
     try:
         if vlan_name:
-            vlan = client.get_vlan_by_name(name=vlan_name, datacenter=datacenter, network_domain_id=network_domain['id'])
+            vlan = client.get_vlan_by_name(name=vlan_name, datacenter=datacenter, network_domain_id=network_domain_id)
             vlan_id = vlan.get('id')
         else:
             vlan_id = None
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException):
         module.fail_json(msg='Failed to locate the VLAN - {0}'.format(vlan_name))
 
-    # Check if the Server exists based on the supplied name
     try:
-        servers = client.list_servers(datacenter, network_domain.get('id'), vlan_id, name)
-    except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as exc:
-        module.fail_json(msg='Failed to get a list of servers - {0}'.format(exc))
-    try:
-        if name:
+        if server_id:
+            server = client.get_server_by_id(server_id=server_id)
+            if server:
+                return_data['server'].append(server)
+        elif name:
             server = client.get_server_by_name(datacenter=datacenter,
-                                               network_domain_id=network_domain.get('id'),
+                                               network_domain_id=network_domain_id,
                                                name=name)
             if server:
                 return_data['server'].append(server)
         else:
+            servers = client.list_servers(datacenter, network_domain_id, vlan_id, name)
             return_data['server'] = servers
     except (KeyError, IndexError, AttributeError):
         module.fail_json(msg='Could not find the server - {0} in {1}'.format(name, datacenter))
