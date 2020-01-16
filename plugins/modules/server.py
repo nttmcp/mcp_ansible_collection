@@ -882,6 +882,8 @@ def create_server(module, client):
                 )
             else:
                 module.fail_json(msg='A Cloud Network Domain is required.')
+            if 'networkAdapter' in network['primary_nic']:
+                primary_nic['networkAdapter'] = network['primary_nic']['networkAdapter']
             if 'privateIpv4' in network['primary_nic']:
                 primary_nic['privateIpv4'] = network['primary_nic']['privateIpv4']
             elif 'vlan' in network['primary_nic']:
@@ -900,6 +902,7 @@ def create_server(module, client):
                 new_nic = {}
                 if 'networkAdapter' not in nic:
                     module.fail_json(msg='NIC Adapter type is required')
+                new_nic['networkAdapter'] = nic.get('networkAdapter')
                 if 'privateIpv4' in nic:
                     new_nic['privateIpv4'] = nic['privateIpv4']
                 elif 'vlan' in nic:
