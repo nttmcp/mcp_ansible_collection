@@ -42,7 +42,7 @@ options:
     network_domain:
         description:
             - The name of a Cloud Network Domain
-        required: true
+        required: false
         type: str
     server:
         description:
@@ -64,6 +64,12 @@ options:
             - The starting hour for the snapshot window (24 hour notation). Use snapshot_info to find a window.
         required: false
         type: int
+    take_snapshot:
+        description:
+            - Whether to initiate a manual snapshot
+        required: false
+        default: false
+        type: bool
     replication:
         description:
             - Enable replication of snapshots for this server to the target datacenter/MCP
@@ -162,7 +168,7 @@ from ansible_collections.nttmcp.mcp.plugins.module_utils.utils import get_creden
 from ansible_collections.nttmcp.mcp.plugins.module_utils.provider import NTTMCPClient, NTTMCPAPIException
 
 
-def enable_snapshot(module, client, server_id, plan, window_id):
+def enable_snapshot(module, client, server_id, plan, window_id, replication_mcp, take_snapshot):
     """
     Enable the Snapshot Service on a server
 
@@ -171,17 +177,21 @@ def enable_snapshot(module, client, server_id, plan, window_id):
     :arg server_id: The UUID of the server
     :arg plan: The service plan to use (e.g. ONE_MONTH)
     :arg window_id: The UUID of the snapshot Window
+    :arg replicaiton_mcp: The ID of the replication MCP
+    :arg take_snapshot: Whether to initiate a manual snapshot
     :returns: Message on exit
     """
     try:
-        result = client.enable_snapshot_service(False, server_id, plan, window_id)
-        if result.get('responseCode') == 'OK':
+        result = client.enable_snapshot_service(False, server_id, plan, window_id, replication_mcp, take_snapshot)
+        if result.get('responseCode') == 'OK' or result.get('responseCode') == 'IN_PROGRESS':
+            '''
             # Check if replication is required
             if module.params.get('replication') is not None:
                 result = client.enable_snapshot_replication(server_id, module.params.get('replication'))
                 if result.get('responseCode') != 'OK':
                     module.fail_json(warning='Failed to enable replication, however Snapshots have been successfully '
-                                     'enabled')
+                                     'enabled'
+            '''
             module.exit_json(changed=True, msg='Snapshots successfully enabled')
         else:
             module.fail_json(msg='Failed to enable Snapshosts: {0}'.format(str(result)))
@@ -350,12 +360,13 @@ def main():
         argument_spec=dict(
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
-            network_domain=dict(required=True, type='str'),
+            network_domain=dict(required=False, type='str'),
             server=dict(required=False, type='str'),
             server_id=dict(required=False, type='str'),
             plan=dict(required=False, default=None, type='str'),
             window=dict(required=False, default=None, type='int'),
             replication=dict(required=False, default=None, type='str'),
+            take_snapshot=dict(required=False, default=False, type='bool'),
             state=dict(default='present', choices=['present', 'absent'])
         ),
         supports_check_mode=True
@@ -373,6 +384,7 @@ def main():
     plan = module.params.get('plan')
     window_id = None
     network_domain_id = None
+    take_snapshot = module.params.get('take_snapshot')
 
     # Check the region supplied is valid
     regions = get_regions()
@@ -388,11 +400,12 @@ def main():
         module.fail_json(msg=e.msg)
 
     # Get the CND
-    try:
-        network = client.get_network_domain_by_name(name=network_domain_name, datacenter=datacenter)
-        network_domain_id = network.get('id')
-    except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
-        module.fail_json(msg='Could not find the Cloud Network Domain: {0}'.format(e))
+    if server_id is None:
+        try:
+            network = client.get_network_domain_by_name(name=network_domain_name, datacenter=datacenter)
+            network_domain_id = network.get('id')
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            module.fail_json(msg='Could not find the Cloud Network Domain: {0}'.format(e))
 
     # Check if the Server exists based on the supplied name
     try:
@@ -420,7 +433,7 @@ def main():
         if not server.get('snapshotService'):
             if module.check_mode:
                 module.exit_json(msg='Input verified, Snapshots can be enabled for the server')
-            enable_snapshot(module, client, server_id, plan, window_id)
+            enable_snapshot(module, client, server_id, plan, window_id, module.params.get('replication'), take_snapshot)
         else:
             result = compare_snapshot(module, server.get('snapshotService'))
             if True in result:

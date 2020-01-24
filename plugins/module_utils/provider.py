@@ -4068,7 +4068,8 @@ class NTTMCPClient():
         except Exception:
             return None
 
-    def enable_snapshot_service(self, update=False, server_id=None, service_plan=None, window_id=None):
+    def enable_snapshot_service(self, update=False, server_id=None, service_plan=None, window_id=None,
+                                replication_mcp=None, take_snapshot=False):
         """
         Enable/Update Snapshot Service configuration
 
@@ -4076,6 +4077,8 @@ class NTTMCPClient():
         :kw server_id: The UUID of the server being enabled for Snapshots
         :kw service_plan: The Service Plan name (e.g. ONE_MONTH)
         :kw window_id: Filter results by a specific start hour (e.g. 06)
+        :kw replication_mcp: The ID of the replication MCP
+        :kw take_snapshot: Whether to initiate a manual snapshot
         :returns: API response
         """
 
@@ -4086,6 +4089,11 @@ class NTTMCPClient():
             raise NTTMCPAPIException('A Service Plan is required, service_plan cannot be None')
         if window_id is None:
             raise NTTMCPAPIException('A Snapshot Window is required, window_id cannot be None')
+
+        if replication_mcp is not None:
+            params['replicationTargetDatacenterId'] = replication_mcp
+        if take_snapshot:
+            params['initiateManualSnapshot'] = True
 
         params['serverId'] = server_id
         params['servicePlan'] = service_plan
