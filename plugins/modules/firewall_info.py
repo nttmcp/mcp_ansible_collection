@@ -51,11 +51,15 @@ options:
         description:
             - Return the firewall rule(s) statistics (works with or without a supplied rule name)
         required: false
+        default: false
         type: bool
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 
 EXAMPLES = '''
@@ -258,9 +262,9 @@ def list_fw_rule(module, client, network_domain_id):
     return_data = return_object('acl')
     try:
         if module.params.get('stats'):
-            return_data['acl'] = client.list_fw_rule_stats(network_domain_id)
+            return_data['acl'] = client.list_fw_rule_stats(network_domain_id, None, 250)
         else:
-            return_data['acl'] = client.list_fw_rules(network_domain_id)
+            return_data['acl'] = client.list_fw_rules(network_domain_id, None, 250)
     except NTTMCPAPIException as e:
         module.fail_json(msg='Could not retrieve a list of firewall rules - {0}'.format(e))
     except KeyError:

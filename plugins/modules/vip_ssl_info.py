@@ -72,7 +72,10 @@ notes:
     - MCP SSL Certificates, Chains, Profile documentation https://docs.mcp-services.net/x/aIJk
     - List of F5 ciphers https://support.f5.com/csp/article/K13171
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 
 EXAMPLES = '''

@@ -314,8 +314,8 @@ class NTTMCPClient():
         else:
             raise NTTMCPAPIException('No response from the API')
 
-    def list_vlans(self, datacenter=None, network_domain_id=None, name=None, ipv4_network_address=None,
-                   ipv6_network_address=None, state=None, attached=None):
+    def list_vlans_old(self, datacenter=None, network_domain_id=None, name=None, ipv4_network_address=None,
+                       ipv6_network_address=None, state=None, attached=None):
         """
         Return a list of VLANs
 
@@ -354,6 +354,45 @@ class NTTMCPClient():
                 return []
         else:
             raise NTTMCPAPIException('Could not get a list of VLANs')
+
+    def list_vlans(self, datacenter=None, network_domain_id=None, name=None, ipv4_network_address=None,
+                   ipv6_network_address=None, state=None, attached=None, page_size=250):
+        """
+        Return a list of VLANs and utilize paging
+
+        :arg self: self
+        :kw network_domain_id: The UUID of the Cloud Network Domain
+        :kw datacenter: The MCP name
+        :kw name: The name of a VLAN
+        :kw ipv4_network_address: The IPv4 subnet address of the VLAN
+        :kw ipv6_network_address: The IPv6 subnet address of the VLAN
+        :kw state: The state of the VLAN
+        :kw attached: Is the VLAN attached
+        :kw page_size: The number of objects per page
+        :returns: An array of VLAN dicts
+        """
+        params = {}
+
+        if datacenter:
+            params['datacenterId'] = datacenter
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        if name:
+            params['name'] = name
+        if ipv4_network_address:
+            params['privateIpv4Address'] = ipv4_network_address
+        if ipv6_network_address:
+            params['ipv6Address'] = ipv6_network_address
+        if state:
+            params['state'] = state
+        if attached:
+            params['attached'] = attached
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'network/vlan'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='vlan', params=params, url=url, page_size=250)
 
     def get_vlan_by_name(self, name=None, datacenter=None, network_domain_id=None):
         """
@@ -681,7 +720,7 @@ class NTTMCPClient():
     """
     Server Functions
     """
-    def list_servers(self, datacenter=None, network_domain_id=None, vlan_id=None, name=None):
+    def list_servers_old(self, datacenter=None, network_domain_id=None, vlan_id=None, name=None):
         """
         Return a list of servers/VMs
         """
@@ -711,6 +750,28 @@ class NTTMCPClient():
                 return []
         else:
             raise NTTMCPAPIException('Could not get a list of servers')
+
+    def list_servers(self, datacenter=None, network_domain_id=None, vlan_id=None, name=None, page_size=250):
+        """
+        Return a list of servers/VMs and utilize paging functionality for more than 250 servers
+        """
+        params = {}
+        if datacenter is None:
+            raise NTTMCPAPIException('A valid value for datacenter is required')
+        else:
+            params['datacenterId'] = datacenter
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        if vlan_id:
+            params['vlanId'] = vlan_id
+        if name:
+            params['name'] = name
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'server/server'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='server', params=params, url=url, page_size=250)
 
     def get_server_by_name(self, datacenter=None, network_domain_id=None, vlan_id=None, name=None):
         """
@@ -1389,7 +1450,7 @@ class NTTMCPClient():
         Return a list of SNAT exclusions
         """
         params = {}
-        return_data = []
+        return_data = snats = []
         if network_domain_id is None:
             raise NTTMCPAPIException('A valid value Network Domain ID is required')
         params['networkDomainId'] = network_domain_id
@@ -1401,23 +1462,20 @@ class NTTMCPClient():
         url = self.base_url + 'network/snatExclusion'
 
         response = self.api_get_call(url, params)
+        snats = self.page_it(response=response, entity='snatExclusion', params=params, url=url, page_size=250)
         try:
-            if response is not None:
-                snats = response.json().get('snatExclusion')
-                if network:
-                    for snat in snats:
-                        if snat.get('id') == snat_id:
+            if network:
+                for snat in snats:
+                    if snat.get('id') == snat_id:
+                        return_data.append(snat)
+                    elif all([network, prefix]):
+                        if snat.get('destinationIpv4NetworkAddress') == network and snat.get('destinationIpv4PrefixSize') == prefix:
                             return_data.append(snat)
-                        elif all([network, prefix]):
-                            if snat.get('destinationIpv4NetworkAddress') == network and snat.get('destinationIpv4PrefixSize') == prefix:
-                                return_data.append(snat)
-                        else:
-                            if snat.get('destinationIpv4NetworkAddress') == network:
-                                return_data.append(snat)
-                    return return_data
-                return snats
-            else:
-                raise NTTMCPAPIException('No response from the API')
+                    else:
+                        if snat.get('destinationIpv4NetworkAddress') == network:
+                            return_data.append(snat)
+                return return_data
+            return snats
         except Exception as e:
             raise NTTMCPAPIException('Could not decode the response - {0}'.format(e))
 
@@ -1516,7 +1574,7 @@ class NTTMCPClient():
         List static routes
         """
         params = {}
-        return_data = []
+        return_data = routes = []
         if network_domain_id is None:
             raise NTTMCPAPIException('A valid value Network Domain ID is required')
 
@@ -1529,33 +1587,30 @@ class NTTMCPClient():
         url = self.base_url + 'network/staticRoute'
 
         response = self.api_get_call(url, params)
-        if response is not None:
-            routes = response.json().get('staticRoute')
-            if network is not None or next_hop:
-                for route in routes:
-                    if route.get('name') == name:
+        routes = self.page_it(response=response, entity='staticRoute', params=params, url=url, page_size=250)
+        if network is not None or next_hop:
+            for route in routes:
+                if route.get('name') == name:
+                    return_data.append(route)
+                elif all([network, prefix, next_hop]):
+                    if (route.get('destinationNetworkAddress') == network and route.get('destinationPrefixSize') == prefix and
+                            route.get('nextHopAddress') == next_hop):
                         return_data.append(route)
-                    elif all([network, prefix, next_hop]):
-                        if (route.get('destinationNetworkAddress') == network and route.get('destinationPrefixSize') == prefix and
-                                route.get('nextHopAddress') == next_hop):
-                            return_data.append(route)
-                    elif all([network, prefix]):
-                        if route.get('destinationNetworkAddress') == network and route.get('destinationPrefixSize') == prefix:
-                            return_data.append(route)
-                    elif all([network, next_hop]):
-                        if route.get('destinationNetworkAddress') == network and route.get('nextHopAddress') == next_hop:
-                            return_data.append(route)
-                    elif network:
-                        if route.get('destinationNetworkAddress') == network:
-                            return_data.append(route)
-                    elif next_hop:
-                        if route.get('nextHopAddress') == next_hop:
-                            return_data.append(route)
-            else:
-                return_data = routes
-            return return_data
+                elif all([network, prefix]):
+                    if route.get('destinationNetworkAddress') == network and route.get('destinationPrefixSize') == prefix:
+                        return_data.append(route)
+                elif all([network, next_hop]):
+                    if route.get('destinationNetworkAddress') == network and route.get('nextHopAddress') == next_hop:
+                        return_data.append(route)
+                elif network:
+                    if route.get('destinationNetworkAddress') == network:
+                        return_data.append(route)
+                elif next_hop:
+                    if route.get('nextHopAddress') == next_hop:
+                        return_data.append(route)
         else:
-            raise NTTMCPAPIException('No response from the API')
+            return_data = routes
+        return return_data
 
     def create_static_route(self, network_domain_id=None, name=None, description=None,
                             version=None, network=None, prefix=None, next_hop=None):
@@ -2268,7 +2323,7 @@ class NTTMCPClient():
         except KeyError:
             raise NTTMCPAPIException('Could not confirm that the remove NAT rule request was accepted')
 
-    def list_port_list(self, network_domain_id):
+    def list_port_list_old(self, network_domain_id):
         """
         Return an array of port lists for a specified Cloud Network Domains
 
@@ -2283,6 +2338,25 @@ class NTTMCPClient():
             return response.json()['portList']
         except KeyError:
             return []
+
+    def list_port_list(self, network_domain_id=None, page_size=250):
+        """
+        Return an array of port lists for a specified Cloud Network Domains
+
+        :kw network_domain_id: Cloud Network Domain UUID
+        :kw page_size: The number of objects per page
+        :returns: Array of Port Lists
+        """
+        params = {}
+
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'network/portList'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='portList', params=params, url=url, page_size=250)
 
     def get_port_list(self, network_domain_id, port_list_id):
         """
@@ -2456,7 +2530,7 @@ class NTTMCPClient():
         except KeyError:
             raise NTTMCPAPIException('Could not confirm that the remove Port List request was accepted')
 
-    def list_ip_list(self, network_domain_id, version):
+    def list_ip_list_old(self, network_domain_id, version):
         """
         Return an array of IP address lists
 
@@ -2475,6 +2549,28 @@ class NTTMCPClient():
             return response.json()['ipAddressList']
         except KeyError:
             return []
+
+    def list_ip_list(self, network_domain_id=None, version=None, page_size=250):
+        """
+        Return an array of IP address lists
+
+        :arg network_domain_id: Cloud Network Domain UUID
+        :arg version: IP version
+        :arg page_size: The number of objects per page
+        :returns: Array of IP Address Lists
+        """
+        params = {}
+
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        if version:
+            params['ipVersion'] = version
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'network/ipAddressList'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='ipAddressList', params=params, url=url, page_size=250)
 
     def get_ip_list(self, network_domain_id, ip_address_list_id):
         """
@@ -2665,7 +2761,7 @@ class NTTMCPClient():
         except KeyError:
             raise NTTMCPAPIException('Could not confirm that the remove IP Address List request was accepted')
 
-    def list_fw_rules(self, network_domain_id,):
+    def list_fw_rules_old(self, network_domain_id,):
         """
         Return an array of firewall rules for the specified Cloud Network Domain
 
@@ -2682,7 +2778,26 @@ class NTTMCPClient():
         except KeyError:
             return []
 
-    def list_fw_rule_stats(self, network_domain_id=None, name=None):
+    def list_fw_rules(self, network_domain_id=None, name=None, page_size=250):
+        """
+        Return a list of firewall rules and utilize paging functionality for more than 250 servers
+        """
+        params = {}
+
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        else:
+            raise NTTMCPAPIException('A valid network domain ID is required')
+        if name is not None:
+            params['name'] = name
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'network/firewallRule'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='firewallRule', params=params, url=url, page_size=250)
+
+    def list_fw_rule_stats_old(self, network_domain_id=None, name=None):
         """
         Return an array of firewall rules with statistics for the specified Cloud Network Domain
 
@@ -2694,7 +2809,7 @@ class NTTMCPClient():
             raise NTTMCPAPIException('A valid network domain ID is required')
 
         params = {'networkDomainId': network_domain_id}
-        if name:
+        if name is not None:
             params['name'] = name
 
         response = self.api_get_call(url, params)
@@ -2702,6 +2817,25 @@ class NTTMCPClient():
             return response.json()['firewallRuleStatistics']
         except KeyError:
             return []
+
+    def list_fw_rule_stats(self, network_domain_id=None, name=None, page_size=250):
+        """
+        Return a list of firewall rules with statistics and utilize paging functionality for more than 250 fw rules
+        """
+        params = {}
+
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
+        else:
+            raise NTTMCPAPIException('A valid network domain ID is required')
+        if name is not None:
+            params['name'] = name
+        params['pageSize'] = page_size
+
+        url = self.base_url + 'network/firewallRuleStatistics'
+
+        response = self.api_get_call(url, params)
+        return self.page_it(response=response, entity='firewallRuleStatistics', params=params, url=url, page_size=250)
 
     def get_fw_rule(self, network_domain_id, fw_rule_id):
         """
@@ -2973,10 +3107,7 @@ class NTTMCPClient():
         url = self.base_url + 'networkDomainVip/node'
 
         response = self.api_get_call(url, params)
-        try:
-            return response.json().get('node')
-        except Exception:
-            return []
+        return self.page_it(response=response, entity='node', params=params, url=url, page_size=250)
 
     def get_vip_node(self, node_id):
         """
@@ -3139,10 +3270,7 @@ class NTTMCPClient():
         url = self.base_url + 'networkDomainVip/pool'
 
         response = self.api_get_call(url, params)
-        try:
-            return response.json().get('pool')
-        except Exception:
-            return []
+        return self.page_it(response=response, entity='pool', params=params, url=url, page_size=250)
 
     def get_vip_pool(self, pool_id):
         """
@@ -4375,6 +4503,40 @@ class NTTMCPClient():
                 raise NTTMCPAPIException('Could not confirm that the Snapshot Service was successfully disabled')
         else:
             raise NTTMCPAPIException('No response from the API')
+
+    #
+    # Generic Functions
+    #
+    def page_it(self, response=None, entity=None, params=None, url=None, page_size=250):
+        tmp_list = list()
+        current_page = 0
+        if None in [response, entity, params, url]:
+            raise NTTMCPAPIException('page_it requires a value for response, entity, params and url')
+
+        response = response.json()
+
+        if response is not None:
+            pages = int(response.get('totalCount') / response.get('pageSize'))
+            remainder = int(response.get('totalCount') % response.get('pageSize'))
+            current_page = response.get('pageNumber', 1)
+            if response.get(entity) is not None:
+                tmp_list = response.get(entity)
+            while(current_page < pages):
+                current_page = current_page + 1
+                params['pageNumber'] = current_page
+                response = self.api_get_call(url, params)
+                response = response.json()
+                if response.get(entity) is not None:
+                    tmp_list.extend(response.get(entity))
+            if remainder > 0 and current_page != 1:
+                params['pageNumber'] = current_page + 1
+                response = self.api_get_call(url, params)
+                response = response.json()
+                if response.get(entity) is not None:
+                    tmp_list.extend(response.get(entity))
+            return tmp_list
+        else:
+            raise NTTMCPAPIException('Could not get a list of: {0}'.format(entity))
 
     #
     # API Calls

@@ -50,8 +50,11 @@ options:
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
-    - requests>=2.21.0
-    - configparser>=3.7.4
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
+        - configparser>=3.7.4
 '''
 
 EXAMPLES = '''

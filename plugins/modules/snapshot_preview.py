@@ -145,7 +145,10 @@ options:
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 
 EXAMPLES = '''

@@ -82,7 +82,10 @@ options:
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 
 EXAMPLES = '''
@@ -535,11 +538,15 @@ def list_server_snapshot_info(module, client):
     :arg client: The CC API client instance
     :returns: The list of Snapshots that exist for a server
     """
-    network_domain_id = get_network_domain_id(module, client)
-    server = get_server(module, client, network_domain_id)
+    if not module.params.get('server_id'):
+        network_domain_id = get_network_domain_id(module, client)
+        server = get_server(module, client, network_domain_id)
+        server_id = server.get('id')
+    else:
+        server_id = module.params.get('server_id')
 
     try:
-        snapshots = client.list_snapshot(server.get('id'))
+        snapshots = client.list_snapshot(server_id)
         if not snapshots:
             module.fail_json(msg='Could not get a list of server snapshots')
     except (KeyError, NTTMCPAPIException) as e:

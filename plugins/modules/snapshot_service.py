@@ -90,7 +90,10 @@ notes:
     - Requires NTT Ltd. MCP account/credentials
     - Introduction to Cloud Server Snapshots - https://docs.mcp-services.net/x/DoBk
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 
 EXAMPLES = '''

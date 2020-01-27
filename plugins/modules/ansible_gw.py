@@ -115,7 +115,10 @@ notes:
     - Requires NTT Ltd. MCP account/credentials
     - Must have sshpass installed for playbooks to use this module
 requirements:
-    - requests>=2.21.0
+    - requests
+    - configparser
+    - pyOpenSSL
+    - netaddr
 '''
 EXAMPLES = '''
 # Creating an Ansible gateway
