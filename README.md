@@ -14,7 +14,7 @@ Ansible Modules to support the NTT Managed Cloud Platform (MCP)
 
 To install these modules execute:
 
-> pip install --user jmespath requests configparser PyOpenSSL netaddr Jinja2 PyYaml
+> pip install --user requests configparser PyOpenSSL netaddr
 
 
 ## Installation
@@ -34,11 +34,11 @@ Configure Cloud Control credentials by creating/editing a `.nttmcp` file in your
 
 OR
 
-Use environment variables
+Use environment variables:
 
-  $ set +o history
-  $ export NTTMCP_API=api-<geo>.mcp-services.net
-  $ export NTTMCP_API_VERSION=2.10
-  $ export NTTMCP_PASSWORD=mypassword
-  $ export NTTMCP_USER=myusername
-  $ set -o history
+    set +o history
+    export NTTMCP_API=api-<geo>.mcp-services.net
+    export NTTMCP_API_VERSION=2.10
+    export NTTMCP_PASSWORD=mypassword
+    export NTTMCP_USER=myusername
+    set -o history
