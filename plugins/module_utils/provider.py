@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2019, Ken Sinfield <ken.sinfield@cis.ntt.com>
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 #
 # NTT LTD MCP Cloud API Provider (MCP 2.0)
 
