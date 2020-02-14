@@ -616,12 +616,13 @@ def add_disk(module, client, network_domain_id, server):
     wait_poll_interval = module.params.get('wait_poll_interval')
 
     # Check IOPS count is within minimum spec
-    disk = {
-        'sizeGb': disk_size,
-        'speed': disk_speed,
-        'iops': disk_iops
-    }
-    disk_iops = validate_disk_iops(disk, disk_size, disk_iops)
+    if disk_type == 'PROVISIONEDIOPS':
+        disk = {
+            'sizeGb': disk_size,
+            'speed': disk_speed,
+            'iops': disk_iops
+        }
+        disk_iops = validate_disk_iops(disk, disk_size, disk_iops)
 
     if disk_type == 'SCSI':
         controller_name = 'scsiController'
@@ -856,10 +857,10 @@ def get_disk(module, server):
         module.fail_json(msg='Invalid disk type.')
 
     try:
-        # If no disk number is provided use the last disk of the specified type on the controller
-        if disk_number is None:
-            disk_number = len(server.get(controller_name)[controller_number].get('disk')) - 1
-        return server.get(controller_name)[controller_number].get('disk')[disk_number]
+        if disk_number is not None:
+            return server.get(controller_name)[controller_number].get('disk')[disk_number]
+        else:
+            return None
     except (NTTMCPAPIException) as e:
         module.fail_json(msg='Could not locate any matching disk - {0}'.format(e))
     except (KeyError, IndexError, AttributeError):
