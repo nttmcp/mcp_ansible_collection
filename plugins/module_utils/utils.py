@@ -231,9 +231,11 @@ def compare_json(a, b, parent):
                 modified['changes'] = True
             else:
                 if type(a[tag]) is list:
-                    a[tag].sort()
+                    # a[tag].sort()
+                    a[tag].sort(key=lambda x: sorted(x.items()))
                 if type(b[tag]) is list:
-                    b[tag].sort()
+                    # b[tag].sort()
+                    b[tag].sort(key=lambda x: sorted(x.items()))
                 if a[tag] != b[tag] and not type(a[tag]) is dict:
                     modified['changes'] = True
                     if parent != "":
