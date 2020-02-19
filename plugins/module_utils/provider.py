@@ -116,6 +116,88 @@ class NTTMCPClient():
     '''
     USER FUNCTIONS
     '''
+    def list_users(self, **kwargs):
+        """
+        Return a list of users
+
+        :arg self: self
+        :key fistname: The fistname of the user(s)
+        :key lastname: The lastname of the user(s)
+        :key email: The Email ID of the user(s)
+        :key phone: The phone number of the user(s)
+        :key phone_country_code: The dialing code for the country
+        :key state: The user(s) state
+        :key department: The department of the user(s)
+        """
+        params = dict()
+        if kwargs:
+            for key, value in kwargs.items():
+                if key == 'firstname' and value is not None:
+                    if '*' in value:
+                        params['firstname.LIKE'] = value
+                    else:
+                        params['firstname'] = value
+                if key == 'lastname' and value is not None:
+                    if '*' in value:
+                        params['lastname.LIKE'] = value
+                    else:
+                        params['lastname'] = value
+                elif key == 'email' and value is not None:
+                    if '*' in value:
+                        params['emailAddress.LIKE'] = value
+                    else:
+                        params['emailAddress'] = value
+                elif key == 'phone' and value is not None:
+                    params['phoneNumber'] = value
+                elif key == 'phone_country_code' and value is not None:
+                    params['phoneCountryCode'] = value
+                elif key == 'state' and value is not None:
+                    if '*' in value:
+                        params['state.LIKE'] = value
+                    else:
+                        params['state'] = value
+                elif key == 'department' and value is not None:
+                    if '*' in value:
+                        params['department.LIKE'] = value
+                    else:
+                        params['department'] = value
+
+        url = self.base_url + 'user/user'
+
+        try:
+            response = self.api_get_call(url, params)
+            return self.page_it(response=response, entity='user', params=params, url=url, page_size=250)
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            raise NTTMCPAPIException(e)
+
+    def get_user(self, username=None):
+        """
+        Return the user
+
+        :arg self: self
+        :kw username: The username of the user to return
+        :returns: The user
+        """
+
+        if username is None:
+            raise NTTMCPAPIException('A username is required')
+
+        url = self.base_url + 'user/user/{0}'.format(username)
+
+        try:
+            response = self.api_get_call(url, None)
+            if response is not None:
+                if response.json():
+                    if response.json().get('responseCode') == 'RESOURCE_NOT_FOUND':
+                        return None
+                    return response.json()
+                else:
+                    return None
+            else:
+                raise NTTMCPAPIException('Could not find the user: {0}').format(username)
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            raise NTTMCPAPIException(e.msg)
+
     def get_my_user(self):
         """
         Return the user
@@ -134,33 +216,194 @@ class NTTMCPClient():
         except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
             raise NTTMCPAPIException(e.msg)
 
-    def update_user(self, username=None, country_code=None, phone_number=None):
+    def create_user(self, username=None, password=None, roles=None, fullname=None, firstname=None, lastname=None,
+                    email=None, phone=None, phone_country_code=None, department=None, custom_1=None, custom_2=None):
+        """
+        Create a user
+
+        :arg self: self
+        :kw username: The username
+        :kw password: You guessed it.. the user's password
+        :kw roles: List of strings representing the role names
+        :kw fullname: The full name of the user
+        :kw firstname: The user's firstname
+        :kw lastname: The user's lastname
+        :kw email: The user's email address
+        :kw phone: The user's phone number used for 2 Factor Authentication if enabled
+        :kw phone_country_code: The country dialing code for the user's phone number
+        :kw department: The user's department
+        :kw custom_1: Custom attribute #1. Can store a user defined value
+        :kw custom_2: Custom attribute #2. Can store a user defined value
+        :returns: The API response
+        """
+        params = dict()
+        if None in [username, password, fullname, firstname, lastname, email]:
+            raise NTTMCPAPIException('A valid value for username, password, fullname, firstname, lastname and email are required')
+        if phone is not None and phone_country_code is None:
+            raise NTTMCPAPIException('phone_country_code is required when a value for phone is present')
+        if roles is not None and type(roles) != list:
+            raise NTTMCPAPIException('Roles must be in provides as a list of strings representing the role names')
+
+        params['userName'] = username
+        params['password'] = password
+        params['fullName'] = fullname
+        params['firstName'] = firstname
+        params['lastName'] = lastname
+        params['emailAddress'] = email
+        if roles is not None:
+            params['role'] = roles
+        if phone is not None:
+            params['phone'] = dict()
+            params['phone']['number'] = phone
+            params['phone']['countryCode'] = phone_country_code
+        if department is not None:
+            params['department'] = department
+        if custom_1 is not None:
+            params['customDefined1'] = custom_1
+        if custom_2 is not None:
+            params['customDefined2'] = custom_2
+
+        url = self.base_url + 'user/createUser'
+
+        response = self.api_post_call(url, params)
+        if response is not None:
+            if response.json()['requestId']:
+                return response.json()
+            else:
+                raise NTTMCPAPIException('Could not confirm that the create User request was accepted')
+        else:
+            raise NTTMCPAPIException('No response from the API')
+
+    def update_user(self, username=None, fullname=None, firstname=None, lastname=None, email=None, phone=None,
+                    phone_country_code=None, department=None, custom_1=None, custom_2=None):
         """
         Update the user
 
         :arg self: self
-        :returns: The result
+        :kw username: The username
+        :kw fullname: The full name of the user
+        :kw firstname: The user's firstname
+        :kw lastname: The user's lastname
+        :kw email: The user's email address
+        :kw phone: The user's phone number used for 2 Factor Authentication if enabled
+        :kw phone_country_code: The country dialing code for the user's phone number
+        :kw department: The user's department
+        :kw custom_1: Custom attribute #1. Can store a user defined value
+        :kw custom_2: Custom attribute #2. Can store a user defined value
+        :returns: The API response
         """
-        params = {}
-        params['phone'] = {}
+        params = dict()
+        params['phone'] = dict()
         if not username:
             raise NTTMCPAPIException('A valid username is required')
-        if country_code:
-            params['phone']['countryCode'] = country_code
-        if phone_number:
-            params['phone']['number'] = phone_number
-        params['username'] = username
+
+        params['userName'] = username
+        if fullname is not None:
+            params['fullName'] = fullname
+        if firstname is not None:
+            params['firstName'] = firstname
+        if lastname is not None:
+            params['lastName'] = lastname
+        if email is not None:
+            params['emailAddress'] = email
+        if phone is not None:
+            params['phone'] = dict()
+            params['phone']['number'] = phone
+            params['phone']['countryCode'] = phone_country_code
+        if department is not None:
+            params['department'] = department
+        if custom_1 is not None:
+            params['customDefined1'] = custom_1
+        if custom_2 is not None:
+            params['customDefined2'] = custom_2
 
         url = self.base_url + 'user/editUser'
 
         try:
             response = self.api_post_call(url, params)
-            if response is not None:
+            if response.json().get('responseCode') in ['OK', 'IN_PROGRESS']:
                 return response.json()
             else:
-                raise NTTMCPAPIException('Could not update the user')
+                return response.json().get('error')
         except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
             raise NTTMCPAPIException(e.msg)
+
+    def set_user_roles(self, username=None, roles=None):
+        """
+        Change the user's roles
+
+        :arg self: self
+        :kw username: The username of the user to update
+        :kw roles: List of roles as strings
+
+        :returns: The result
+        """
+        params = {}
+        if None in [username, roles] or type(roles) is not list:
+            raise NTTMCPAPIException('A valid username and list of roles is required')
+        params['userName'] = username
+        params['role'] = roles
+
+        url = self.base_url + 'user/setUserRoles'
+
+        try:
+            response = self.api_post_call(url, params)
+            if response.json().get('responseCode') in ['OK', 'IN_PROGRESS']:
+                return response.json().get('message')
+            else:
+                return response.json().get('error')
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            raise NTTMCPAPIException(e.msg)
+
+    def change_user_password(self, username=None, password=None):
+        """
+        Change the user's password
+
+        :arg self: self
+        :kw username: The username of the user to update
+        :kw password: The new password
+
+        :returns: The result
+        """
+        params = {}
+        if None in [username, password]:
+            raise NTTMCPAPIException('A valid username and password is required')
+        params['userName'] = username
+        params['password'] = password
+
+        url = self.base_url + 'user/changeUserPassword'
+
+        try:
+            response = self.api_post_call(url, params)
+            if response.json().get('responseCode') in ['OK', 'IN_PROGRESS']:
+                return response.json().get('message')
+            else:
+                return response.json().get('error')
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            raise NTTMCPAPIException(e.msg)
+
+    def remove_user(self, username=None):
+        """
+        Remove the user
+
+        :arg self: self
+        :kw username: The username of the user to remove
+        :returns: The result
+        """
+        if username is None:
+            raise NTTMCPAPIException('username cannot be None')
+
+        params = {'userName': username}
+
+        url = self.base_url + 'user/deleteUser'
+        response = self.api_post_call(url, params)
+        try:
+            if response.json().get('responseCode') in ['OK', 'IN_PROGRESS']:
+                return response.json().get('message')
+            else:
+                return response.json().get('error')
+        except KeyError:
+            raise NTTMCPAPIException('Could not confirm that the remove User request was accepted')
 
     '''
     NETWORK FUNCTIONS

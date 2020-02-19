@@ -231,11 +231,17 @@ def compare_json(a, b, parent):
                 modified['changes'] = True
             else:
                 if type(a[tag]) is list:
-                    # a[tag].sort()
-                    a[tag].sort(key=lambda x: sorted(x.items()))
+                    if len(a.get(tag)) > 0:
+                        if type(a.get(tag)[0]) is dict or type(a.get(tag)[0]) is list:
+                            a[tag].sort(key=lambda x: sorted(x.items()))
+                        else:
+                            a[tag].sort()
                 if type(b[tag]) is list:
-                    # b[tag].sort()
-                    b[tag].sort(key=lambda x: sorted(x.items()))
+                    if len(b.get(tag)) > 0:
+                        if type(b.get(tag)[0]) is dict or type(b.get(tag)[0]) is list:
+                            b[tag].sort(key=lambda x: sorted(x.items()))
+                        else:
+                            b[tag].sort()
                 if a[tag] != b[tag] and not type(a[tag]) is dict:
                     modified['changes'] = True
                     if parent != "":
@@ -252,6 +258,6 @@ def compare_json(a, b, parent):
             if tag not in a:
                 modified['changes'] = True
                 modified['removed'][str(tag)] = str(b[str(tag)])
-    except (KeyError, IndexError, AttributeError, TypeError):
-        return False
+    except (KeyError, IndexError, AttributeError, TypeError) as e:
+        return e
     return modified
