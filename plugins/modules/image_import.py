@@ -27,6 +27,32 @@ version_added: "2.10"
 author:
     - Ken Sinfield (@kensinfield)
 options:
+    auth:
+        description:
+            - Optional dictionary containing the authentication and API information for Cloud Control
+        required: false
+        type: dict
+        suboptions:
+            username:
+                  description:
+                      - The Cloud Control API username
+                  required: false
+                  type: str
+            password:
+                  description:
+                      - The Cloud Control API user password
+                  required: false
+                  type: str
+            api:
+                  description:
+                      - The Cloud Control API endpoint e.g. api-na.mcp-services.net
+                  required: false
+                  type: str
+            api_version:
+                  description:
+                      - The Cloud Control API version e.g. 2.11
+                  required: false
+                  type: str
     region:
         description:
             - The geographical region
@@ -384,6 +410,7 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
+            auth=dict(type='dict'),
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             name=dict(required=True, type='str'),
@@ -423,7 +450,7 @@ def main():
 
     # Check if the image already exists
     try:
-        images = client.list_customer_image(datacenter_id=datacenter, image_name=image_name)
+        images = client.list_customer_image(datacenter_id=datacenter, image_name=image_name).get('customerImage')
         if images:
             image_exists = [image for image in images if image.get('name') == image_name][0]
     except (KeyError, AttributeError, NTTMCPAPIException) as e:

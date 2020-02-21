@@ -23,8 +23,34 @@ description:
     - Create/Update/Remove the user accounts for your organization
 version_added: "1.0.4"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
+    auth:
+        description:
+            - Optional dictionary containing the authentication and API information for Cloud Control
+        required: false
+        type: dict
+        suboptions:
+            username:
+                  description:
+                      - The Cloud Control API username
+                  required: false
+                  type: str
+            password:
+                  description:
+                      - The Cloud Control API user password
+                  required: false
+                  type: str
+            api:
+                  description:
+                      - The Cloud Control API endpoint e.g. api-na.mcp-services.net
+                  required: false
+                  type: str
+            api_version:
+                  description:
+                      - The Cloud Control API version e.g. 2.11
+                  required: false
+                  type: str
     region:
         description:
             - The geographical region
@@ -54,7 +80,7 @@ options:
             - Used to change the password of an existing user
         required: false
         type: str
-    fistname:
+    firstname:
         description:
             - The fistname of the user
         required: false
@@ -62,6 +88,11 @@ options:
     lastname:
         description:
             - The lastname of the user
+        required: false
+        type: str
+    fullname:
+        description:
+            - The fullname of the user
         required: false
         type: str
     email:
@@ -73,12 +104,12 @@ options:
         description:
             - The dialing code for the country of the user
         required: false
-        type: str
+        type: int
     phone:
         description:
             - The phone number of the user
         required: false
-        type: str
+        type: int
     remove_phone:
         description:
             - Remove the user's phone information
@@ -90,6 +121,30 @@ options:
             - The department of the user
         required: false
         type: str
+    custom_1:
+        description:
+            - User defined custom attribute 1
+        required: false
+        type: str
+    custom_2:
+        description:
+            - User defined custom attribute 1
+        required: false
+        type: str
+    roles:
+        description:
+            - List of roles for the user
+        required: false
+        type: list
+    state:
+        description:
+            - The action to be performed
+        required: false
+        type: str
+        default: present
+        choices:
+            - present
+            - absent
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
@@ -422,6 +477,7 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
+            auth=dict(type='dict'),
             region=dict(default='na', type='str'),
             username=dict(required=True, type='str'),
             my_user=dict(default=False, type='bool'),

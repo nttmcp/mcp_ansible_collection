@@ -59,7 +59,7 @@ class NTTMCPClient():
         try:
             self.home_geo = self.get_user_home_geo()
         except NTTMCPAPIException as e:
-            raise NTTMCPAPIException('Could not get the user home geo: {0}'.format(e.msg))
+            raise NTTMCPAPIException('Could not get the user\'s home geo: {0}'.format(e.msg))
         try:
             self.org_id = self.get_org_id()
         except NTTMCPAPIException as e:
@@ -88,6 +88,7 @@ class NTTMCPClient():
         """
         API_URL = self.credentials.get('api_endpoint') or API_ENDPOINTS[DEFAULT_REGION]['host']
         url = ('https://%s/caas/%s/user/myUser' % (API_URL, self.API_VER))
+
         try:
             response = self.api_get_call(url, None)
             if response is not None:

@@ -85,6 +85,16 @@ def get_credentials(module):
     except ImportError as e:
         module.fail_json(msg='{0}'.format(e))
 
+    # Check if auth dictionary was included in the module
+    if module.params.get('auth') is not None:
+        auth = module.params.get('auth')
+        return_data['api_endpoint'] = auth.get('api')
+        return_data['api_version'] = auth.get('api_version')
+        if None not in [auth.get('username'), auth.get('password')]:
+            return_data['user_id'] = auth.get('username')
+            return_data['password'] = auth.get('password')
+            return return_data
+
     # Attempt to grab from environment
     if 'NTTMCP_USER' in environ and 'NTTMCP_PASSWORD' in environ:
         return_data['user_id'] = environ['NTTMCP_USER']

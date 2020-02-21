@@ -23,8 +23,34 @@ description:
     - Get and List the user accounts for your organization
 version_added: "1.0.4"
 author:
-    - Ken Sinfield (ken.sinfield@cis.ntt.com)
+    - Ken Sinfield (@kensinfield)
 options:
+    auth:
+        description:
+            - Optional dictionary containing the authentication and API information for Cloud Control
+        required: false
+        type: dict
+        suboptions:
+            username:
+                  description:
+                      - The Cloud Control API username
+                  required: false
+                  type: str
+            password:
+                  description:
+                      - The Cloud Control API user password
+                  required: false
+                  type: str
+            api:
+                  description:
+                      - The Cloud Control API endpoint e.g. api-na.mcp-services.net
+                  required: false
+                  type: str
+            api_version:
+                  description:
+                      - The Cloud Control API version e.g. 2.11
+                  required: false
+                  type: str
     region:
         description:
             - The geographical region
@@ -43,7 +69,7 @@ options:
             - The username to retrieve
         required: false
         type: str
-    fistname:
+    firstname:
         description:
             - The fistname to search on
             - Supports using * as a wildcard
@@ -205,6 +231,7 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
+            auth=dict(type='dict'),
             region=dict(default='na', type='str'),
             my_user=dict(default=False, type='bool'),
             username=dict(default=None, type='str'),
