@@ -41,6 +41,7 @@ Each module supports an optional argument of type dictionary that contains the f
 
 Examples (hint: use ansible-vault to encrypt the password strings):
 
+```YAML
 - name: List Cloud Network Domains:
   nttmcp.mcp.network_info:
     auth:
@@ -50,9 +51,11 @@ Examples (hint: use ansible-vault to encrypt the password strings):
       api_version: 2.11
     region: na
     datacenter: NA9
+```
 
 OR using variables
 
+```YAML
 - hosts: localhost
   connection: local
   gather_facts: no
@@ -68,6 +71,7 @@ OR using variables
       auth: "{{auth}}"
       region: na
       datacenter: NA9
+```
 
 ### Credential File
 
@@ -83,9 +87,11 @@ Configure Cloud Control credentials by creating/editing a `.nttmcp` file in your
 
 Use environment variables:
 
-    set +o history
-    export NTTMCP_API=api-<geo>.mcp-services.net
-    export NTTMCP_API_VERSION=2.10
-    export NTTMCP_PASSWORD=mypassword
-    export NTTMCP_USER=myusername
-    set -o history
+```Shell
+set +o history
+export NTTMCP_API=api-<geo>.mcp-services.net
+export NTTMCP_API_VERSION=2.10
+export NTTMCP_PASSWORD=mypassword
+export NTTMCP_USER=myusername
+set -o history
+```
