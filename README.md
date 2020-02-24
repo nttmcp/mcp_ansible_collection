@@ -19,7 +19,7 @@ To install these modules execute:
 
 ## Installation
 
-ansible-galaxy collection install nttmcp.mcp
+ansible-galaxy collection install -f nttmcp.mcp
 
 
 ## Authentication

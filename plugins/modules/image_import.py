@@ -351,14 +351,16 @@ def delete_image(module, client, image):
     image_name = image.get('name')
 
     try:
-        client.delete_customer_image(image_id=image.get('id'))
+        result = client.delete_customer_image(image_id=image.get('id'))
+        if result.get('responseCode') not in ['IN_PROGRESS', 'OK']:
+            raise NTTMCPAPIException(result.get('message'))
     except NTTMCPAPIException as e:
         module.fail_json(msg='Error deleting the image - {0}'.format(e))
 
     if module.params['wait']:
         while image_exists and time < wait_time:
             try:
-                images = client.list_customer_image(datacenter_id=datacenter, image_name=image_name)
+                images = client.list_customer_image(datacenter_id=datacenter, image_name=image_name).get('customerImage')
                 image_exists = [image for image in images if image.get('name') == image_name]
             except (KeyError, AttributeError, NTTMCPAPIException):
                 pass
