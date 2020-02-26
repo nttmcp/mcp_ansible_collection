@@ -302,7 +302,6 @@ def import_image(module, client):
     :arg client: The CC API client instance
     :returns: The import image object
     """
-    return_data = return_object('image')
     image_name = module.params['name']
     description = module.params['description']
     ovf_package = module.params['ovf_package']
@@ -329,9 +328,8 @@ def import_image(module, client):
         wait_result = wait_for_image_import(module, client, image_id, 'NORMAL')
         if wait_result is None:
             module.fail_json(msg='Could not verify the image import was successful. Check manually')
-        return_data['image'].append(wait_result)
 
-    module.exit_json(changed=True, data=return_data.get('image'))
+    module.exit_json(changed=True, data=wait_result)
 
 
 def delete_image(module, client, image):

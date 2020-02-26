@@ -99,7 +99,7 @@ options:
     disk_number:
         description:
             - The disk number on the controller as an integer
-            - If no disk number is provided the last disk of the specified type on the controller will be assumed
+            - If no disk number is provided the next free disk on the specified type on the controller will be assumed
         required: false
         type: int
         default: 0
@@ -244,6 +244,11 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+disk_number:
+    description: The number of the new disk on the controller
+    returned: success when adding a new disk
+    type: int
+    sample: 1
 data:
     description: Server objects
     returned: success
@@ -629,6 +634,7 @@ def add_disk(module, client, network_domain_id, server):
     :arg server: The dict containing the server to be updated
     :returns: The updated server
     """
+    device_number = None
     name = server.get('name')
     datacenter = server.get('datacenterId')
     disk_speed = module.params.get('speed')
@@ -660,13 +666,33 @@ def add_disk(module, client, network_domain_id, server):
         module.fail_json(msg='Invalid disk type.')
 
     try:
-        device_number = len(server.get(controller_name)[controller_number].get('disk'))
+        device_number = get_next_free_disk(disk_type, server.get(controller_name)[controller_number])
+        if device_number is None:
+            module.fail_json(msg='Error: Could not locate a valid free disk ID on this controller')
         controller_id = server.get(controller_name)[controller_number].get('id')
         client.add_disk(controller_id, controller_name, device_number, disk_size, disk_speed, disk_iops)
         if module.params.get('wait'):
             wait_for_server(module, client, name, datacenter, network_domain_id, 'NORMAL', False, False, wait_poll_interval)
     except NTTMCPAPIException as e:
         module.fail_json(msg='Could not create the disk - {0}'.format(e))
+
+    return device_number
+
+
+def get_next_free_disk(disk_type, controller):
+    valid_slots = [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15]
+    used_slots = list()
+    if disk_type == 'SCSI':
+        used_slots = [item['scsiId'] for item in controller.get('disk', list())]
+    elif disk_type == 'SATA':
+        used_slots = [item['sataId'] for item in controller.get('disk', list())]
+    elif disk_type == 'IDE':
+        used_slots = [item['ideId'] for item in controller.get('disk', list())]
+
+    for slot in valid_slots:
+        if slot not in used_slots:
+            return slot
+    return None
 
 
 def update_disk(module, client, network_domain_id, server, disk):
@@ -1099,6 +1125,7 @@ def main():
     stop_server = module.params.get('stop')
     start = module.params.get('start')
     server = {}
+    disk_number = None
 
     # Check the region supplied is valid
     regions = get_regions()
@@ -1151,11 +1178,11 @@ def main():
                 server_running = False
             elif server_running and not stop_server:
                 module.fail_json(msg='Server disks cannot be added while the server is running')
-            add_disk(module, client, network_domain_id, server)
+            disk_number = add_disk(module, client, network_domain_id, server)
             if start and not server_running:
                 server_command(module, client, server, 'start')
             server = client.get_server_by_name(datacenter, network_domain_id, None, name)
-            module.exit_json(changed=True, data=server)
+            module.exit_json(changed=True, disk_number=disk_number, data=server)
         else:
             try:
                 if compare_disk(module, disk):

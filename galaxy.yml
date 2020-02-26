@@ -9,7 +9,7 @@ namespace: nttmcp
 name: mcp
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 1.0.5
+version: 1.0.6
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -28,7 +28,7 @@ description: Ansible Modules for NTT Limited's MCP Cloud Control API
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- GPL-2.0-or-later
+- GPL-2.0-only
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
