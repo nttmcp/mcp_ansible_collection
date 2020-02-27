@@ -1060,8 +1060,8 @@ def compare_server(module, server):
     params['memoryGb'] = server.get('memoryGb')
     if module.params.get('cpu'):
         params['cpu']['speed'] = module.params.get('cpu').get('speed', server.get('cpu').get('speed'))
-        params['cpu']['count'] = module.params.get('cpu').get('count', server.get('cpu').get('count'))
-        params['cpu']['coresPerSocket'] = module.params.get('cpu').get('coresPerSocket', server.get('cpu').get('coresPerSocket'))
+        params['cpu']['count'] = int(module.params.get('cpu').get('count', server.get('cpu').get('count')))
+        params['cpu']['coresPerSocket'] = int(module.params.get('cpu').get('coresPerSocket', server.get('cpu').get('coresPerSocket')))
     if module.params['memory_gb']:
         params['memoryGb'] = module.params.get('memory_gb')
 
