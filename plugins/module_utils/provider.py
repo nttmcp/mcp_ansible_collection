@@ -2973,7 +2973,7 @@ class NTTMCPClient():
                     if 'end' in ip_address:
                         new_ip_group['end'] = ip_address.get('end')
                     elif 'prefix' in ip_address:
-                        new_ip_group['prefixSize'] = ip_address.get('prefix')
+                        new_ip_group['prefixSize'] = int(ip_address.get('prefix'))
                     params['ipAddress'].append(new_ip_group)
                 except KeyError:
                     raise NTTMCPAPIException('IP Addresses must have a beginning IP Address')
