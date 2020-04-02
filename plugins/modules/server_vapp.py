@@ -585,7 +585,8 @@ def main():
             module.fail_json(msg='vApp properties cannot be modified while the server is running')
         if not server_id:
             module.fail_json(msg='Failed to locate the server')
-        vapp = ast.literal_eval(str(server.get('vAppProperties')).encode('ascii')) or dict()
+        # vapp = ast.literal_eval(str(server.get('vAppProperties')).encode('ascii')) or dict()
+        vapp = ast.literal_eval(str(server.get('vAppProperties'))) or dict()
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
         module.fail_json(msg='Failed to locate the server - {0}'.format(e))
 
@@ -599,6 +600,8 @@ def main():
         else:
             module.exit_json(msg='No update required', data=server.get('vAppProperties'))
         try:
+            # Pause to allow the API/DB to catch up
+            sleep(2)
             server = client.get_server_by_name(datacenter, network_domain_id, None, name)
         except NTTMCPAPIException:
             module.warn(warning='The update was successfull but there was an issue getting the updated server')

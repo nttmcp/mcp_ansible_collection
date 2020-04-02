@@ -118,6 +118,33 @@ options:
                     - The number of cores per CPU socket as an Integer
                 required: false
                 type: str
+    avs:
+        description:
+            - VM Advanced Vritualization settings (only for SAP enabled MCPs)
+            - Not available in most MCPs
+        required: false
+        type: dict
+        suboptions:
+            nestedHardwareVirtualization:
+                description:
+                    - Nested HW virtualization
+                required: false
+                type: bool
+            cpuLatencySensitivity:
+                description:
+                    - NORMAL, HIGH
+                required: false
+                type: str
+            numaAutosize:
+                description:
+                    - Enable NUMA autosize
+                required: false
+                type: bool
+            enableHostInfoToVmTools:
+                description:
+                    - Enable VMTools Host information
+                required: false
+                type: bool
     memory_gb:
         description:
             - Integer value for the server memory size
@@ -1002,9 +1029,10 @@ def update_server(module, client, server):
     :returns: The updated server
     """
     return_data = return_object('server')
-    return_data['server'] = {}
-    params = {}
-    cpu = {}
+    return_data['server'] = dict()
+    params = dict()
+    cpu = dict()
+    avs = dict()
     network_domain_id = server['networkInfo']['networkDomainId']
     datacenter = server['datacenterId']
     name = server['name']
@@ -1020,6 +1048,17 @@ def update_server(module, client, server):
             params['coresPerSocket'] = cpu['coresPerSocket']
         if 'speed' in cpu:
             params['cpuSpeed'] = cpu['speed']
+    if module.params.get('avs') is not None:
+        avs = module.params.get('avs')
+        params['advancedVirtualizationSettings'] = dict()
+        if avs.get('nestedHardwareVirtualization'):
+            params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = avs.get('nestedHardwareVirtualization')
+        if avs.get('cpuLatencySensitivity'):
+            params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = avs.get('cpuLatencySensitivity')
+        if avs.get('numaAutosize'):
+            params['advancedVirtualizationSettings']['numaAutosize'] = avs.get('numaAutosize')
+        if avs.get('enableHostInfoToVmTools'):
+            params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = avs.get('enableHostInfoToVmTools')
     if module.params['memory_gb']:
         params['memoryGb'] = module.params['memory_gb']
 
@@ -1057,11 +1096,31 @@ def compare_server(module, server):
     existing_server['cpu'] = server.get('cpu')
     existing_server['memoryGb'] = server.get('memoryGb')
     params['cpu'] = deepcopy(server.get('cpu'))
+    if server.get('advancedVirtualizationSetting'):
+        # Hack because CC API isn't being consitent between what it expects and what it returns
+        current_avs = dict()
+        for setting in server.get('advancedVirtualizationSetting', list()):
+            current_avs[setting.get('name')] = setting.get('value')
+        params['advancedVirtualizationSettings'] = dict()
+        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = True if current_avs.get('nestedHardwareVirtualization') == 'true' else False
+        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = current_avs.get('cpuLatencySensitivity')
+        params['advancedVirtualizationSettings']['numaAutosize'] = True if current_avs.get('numaAutosize') == 'true' else False
+        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = True if current_avs.get('enableHostInfoToVmTools') == 'true' else False
+        existing_server['advancedVirtualizationSettings'] = deepcopy(params['advancedVirtualizationSettings'])
     params['memoryGb'] = server.get('memoryGb')
     if module.params.get('cpu'):
         params['cpu']['speed'] = module.params.get('cpu').get('speed', server.get('cpu').get('speed'))
         params['cpu']['count'] = int(module.params.get('cpu').get('count', server.get('cpu').get('count')))
         params['cpu']['coresPerSocket'] = int(module.params.get('cpu').get('coresPerSocket', server.get('cpu').get('coresPerSocket')))
+    if module.params.get('avs'):
+        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = module.params.get('avs').get('nestedHardwareVirtualization',
+                                                                                                                params['advancedVirtualizationSettings']['nestedHardwareVirtualization'])
+        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = module.params.get('avs').get('cpuLatencySensitivity',
+                                                                                                         params['advancedVirtualizationSettings']['cpuLatencySensitivity'])
+        params['advancedVirtualizationSettings']['numaAutosize'] = module.params.get('avs').get('numaAutosize',
+                                                                                                params['advancedVirtualizationSettings']['numaAutosize'])
+        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = module.params.get('avs').get('enableHostInfoToVmTools',
+                                                                                                           params['advancedVirtualizationSettings']['enableHostInfoToVmTools'])
     if module.params['memory_gb']:
         params['memoryGb'] = module.params.get('memory_gb')
 
@@ -1442,6 +1501,7 @@ def main():
             image=dict(required=False, type='str'),
             cluster=dict(required=False, type='str'),
             cpu=dict(required=False, type='dict'),
+            avs=dict(required=False, type='dict'),
             memory_gb=dict(required=False, type='int'),
             network_info=dict(required=False, type='dict'),
             primary_dns=dict(required=False, type='str'),

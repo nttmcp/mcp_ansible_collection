@@ -51,7 +51,7 @@ tags:
 repository: https://github.com/nttmcp/mcp_ansible_collection
 
 # The URL to any online docs
-documentation: https://docs.mcp-services.net/display/CCD/MCP+2.0
+documentation: https://docs.mcp-services.net/display/CCD/How+to+use+the+NTT+MCP+Ansible+Modules
 
 # The URL to the homepage of the collection/project
 homepage: https://galaxy.ansible.com/nttmcp/mcp

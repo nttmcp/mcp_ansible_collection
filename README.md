@@ -19,7 +19,7 @@ To install these modules execute:
 
 ## Installation
 
-ansible-galaxy collection install -f nttmcp.mcp
+> ansible-galaxy collection install -f nttmcp.mcp
 
 
 ## Authentication
@@ -79,7 +79,7 @@ Configure Cloud Control credentials by creating/editing a `.nttmcp` file in your
 
     [nttmcp]
     NTTMCP_API: api-<geo>.mcp-services.net
-    NTTMCP_API_VERSION: 2.10
+    NTTMCP_API_VERSION: 2.11
     NTTMCP_PASSWORD: mypassword
     NTTMCP_USER: myusername
 
@@ -90,7 +90,7 @@ Use environment variables:
 ```Shell
 set +o history
 export NTTMCP_API=api-<geo>.mcp-services.net
-export NTTMCP_API_VERSION=2.10
+export NTTMCP_API_VERSION=2.11
 export NTTMCP_PASSWORD=mypassword
 export NTTMCP_USER=myusername
 set -o history

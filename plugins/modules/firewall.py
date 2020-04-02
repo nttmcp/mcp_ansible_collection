@@ -81,7 +81,7 @@ options:
         default: ACCEPT_DECISIVELY
         choices:
             - ACCEPT_DECISIVELY
-            - DENY
+            - DROP
     version:
         description:
             - The IP version
@@ -105,6 +105,7 @@ options:
     src_cidr:
         description:
             - The source IP address in CIDR notation
+            - ANY is represented by 0.0.0.0/0
         required: false
         type: str
     src_ip_list:
@@ -115,6 +116,7 @@ options:
     dst_cidr:
         description:
             - The destination IP address in CIDR notation
+            - ANY is represented by 0.0.0.0/0
         required: false
         type: str
     dst_ip_list:
@@ -481,37 +483,46 @@ def update_fw_rule(module, client, network_domain_id, existing_fw_rule, src_cidr
     fw_rule_id = existing_fw_rule.get('id')
 
     # Build the parameter list to compare to the existing object in prepartion for update
-    try:
-        if args['src_ip_list']:
-            args['src_ip_list'] = client.get_ip_list_by_name(network_domain_id, args.get('src_ip_list'), args.get('version')).get('id')
-        if args['dst_ip_list']:
-            args['dst_ip_list'] = client.get_ip_list_by_name(network_domain_id, args.get('dst_ip_list'), args.get('version')).get('id')
-        if args['src_port_list']:
-            args['src_port_list'] = client.get_port_list_by_name(network_domain_id, args.get('src_port_list')).get('id')
-        if args['dst_port_list']:
-            args['dst_port_list'] = client.get_port_list_by_name(network_domain_id, args.get('dst_port_list')).get('id')
-    except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
-        module.fail_json(msg='update_fw_rule: Could not determine IP address and/or child port lists - {0}'.format(e),
-                         exception=traceback.format_exc())
+    if existing_fw_rule.get('ruleType') != 'DEFAULT_RULE':
+        try:
+            if args['src_ip_list']:
+                args['src_ip_list'] = client.get_ip_list_by_name(network_domain_id, args.get('src_ip_list'), args.get('version')).get('id')
+            if args['dst_ip_list']:
+                args['dst_ip_list'] = client.get_ip_list_by_name(network_domain_id, args.get('dst_ip_list'), args.get('version')).get('id')
+            if args['src_port_list']:
+                args['src_port_list'] = client.get_port_list_by_name(network_domain_id, args.get('src_port_list')).get('id')
+            if args['dst_port_list']:
+                args['dst_port_list'] = client.get_port_list_by_name(network_domain_id, args.get('dst_port_list')).get('id')
+        except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as e:
+            module.fail_json(msg='update_fw_rule: Could not determine IP address and/or child port lists - {0}'.format(e),
+                             exception=traceback.format_exc())
 
-    fw_rule = client.fw_args_to_dict(False, fw_rule_id, network_domain_id, args.get('name'),
-                                     args.get('action'), args.get('version'),
-                                     args.get('protocol'),
-                                     str(src_cidr.network_address) if hasattr(src_cidr, 'network_address') else None,
-                                     str(src_cidr.prefixlen) if hasattr(src_cidr, 'prefixlen') else None,
-                                     args.get('src_ip_list'),
-                                     str(dst_cidr.network_address) if hasattr(dst_cidr, 'network_address') else None,
-                                     str(dst_cidr.prefixlen) if hasattr(dst_cidr, 'prefixlen') else None,
-                                     args.get('dst_ip_list'),
-                                     args.get('src_port_start'),
-                                     args.get('src_port_end'),
-                                     args.get('src_port_list'),
-                                     args.get('dst_port_start'),
-                                     args.get('dst_port_end'),
-                                     args.get('dst_port_list'), args.get('enabled'),
-                                     args.get('position'), args.get('position_to'))
-    # Check for any state changes in the fw rule and update if required
-    compare_result = compare_fw_rule(fw_rule, deepcopy(existing_fw_rule))
+        fw_rule = client.fw_args_to_dict(False, fw_rule_id, network_domain_id, args.get('name'),
+                                         args.get('action'), args.get('version'),
+                                         args.get('protocol'),
+                                         str(src_cidr.network_address) if hasattr(src_cidr, 'network_address') else None,
+                                         str(src_cidr.prefixlen) if hasattr(src_cidr, 'prefixlen') else None,
+                                         args.get('src_ip_list'),
+                                         str(dst_cidr.network_address) if hasattr(dst_cidr, 'network_address') else None,
+                                         str(dst_cidr.prefixlen) if hasattr(dst_cidr, 'prefixlen') else None,
+                                         args.get('dst_ip_list'),
+                                         args.get('src_port_start'),
+                                         args.get('src_port_end'),
+                                         args.get('src_port_list'),
+                                         args.get('dst_port_start'),
+                                         args.get('dst_port_end'),
+                                         args.get('dst_port_list'), args.get('enabled'),
+                                         args.get('position'), args.get('position_to'))
+        # Check for any state changes in the fw rule and update if required
+        compare_result = compare_fw_rule(fw_rule, deepcopy(existing_fw_rule))
+    else:
+        fw_rule = dict()
+        fw_rule['id'] = fw_rule_id
+        fw_rule['enabled'] = args.get('enabled')
+        tmp_fw_rule = deepcopy(existing_fw_rule)
+        tmp_fw_rule['enabled'] = args.get('enabled')
+        # Check for any state changes in the fw rule and update if required
+        compare_result = compare_fw_rule(tmp_fw_rule, deepcopy(existing_fw_rule))
     # Implement check_mode
     if module.check_mode:
         module.exit_json(data=compare_result)
@@ -561,47 +572,48 @@ def compare_fw_rule(new_fw_rule, existing_fw_rule):
     :arg existing_fw_rule: The dict containing the speification for the existing firewall rule
     :returns: Any differences between the two firewall rules
     """
-    existing_dst = existing_fw_rule['destination']
-    existing_src = existing_fw_rule['source']
-    existing_fw_rule['destination'] = {}
-    existing_fw_rule['source'] = {}
-
     # Handle schema differences between the create/update schema and the returned get/list schema
-    if 'ipAddressList' in existing_dst:
-        existing_fw_rule['destination']['ipAddressListId'] = existing_dst['ipAddressList']['id']
-    elif 'ip' in existing_dst:
-        existing_fw_rule['destination']['ip'] = {}
-        existing_fw_rule['destination']['ip']['address'] = existing_dst['ip']['address']
-        if 'prefixSize' in existing_dst['ip']:
-            existing_fw_rule['destination']['ip']['prefixSize'] = str(existing_dst['ip']['prefixSize'])
-    if 'portList' in existing_dst:
-        existing_fw_rule['destination']['portListId'] = existing_dst['portList']['id']
-    elif 'port' in existing_dst:
-        existing_fw_rule['destination']['port'] = {}
-        existing_fw_rule['destination']['port']['begin'] = str(existing_dst['port']['begin'])
-        if 'end' in existing_dst['port']:
-            existing_fw_rule['destination']['port']['end'] = str(existing_dst['port']['end'])
-    if 'ipAddressList' in existing_src:
-        existing_fw_rule['source']['ipAddressListId'] = existing_src['ipAddressList']['id']
-    elif 'ip' in existing_src:
-        existing_fw_rule['source']['ip'] = {}
-        existing_fw_rule['source']['ip']['address'] = existing_src['ip']['address']
-        if 'prefixSize' in existing_src['ip']:
-            existing_fw_rule['source']['ip']['prefixSize'] = str(existing_src['ip']['prefixSize'])
-    if 'portList' in existing_src:
-        existing_fw_rule['source']['portListId'] = existing_src['portList']['id']
-    elif 'port' in existing_src:
-        existing_fw_rule['source']['port'] = {}
-        existing_fw_rule['source']['port']['begin'] = str(existing_src['port']['begin'])
-        if 'end' in existing_src['port']:
-            existing_fw_rule['source']['port']['end'] = str(existing_src['port']['end'])
+    if existing_fw_rule.get('ruleType') != 'DEFAULT_RULE':
+        existing_dst = existing_fw_rule['destination']
+        existing_src = existing_fw_rule['source']
+        existing_fw_rule['destination'] = {}
+        existing_fw_rule['source'] = {}
 
-    existing_fw_rule.pop('ruleType', None)
-    existing_fw_rule.pop('datacenterId', None)
-    existing_fw_rule.pop('state', None)
-    existing_fw_rule.pop('ipVersion', None)
-    existing_fw_rule.pop('name', None)
-    existing_fw_rule.pop('networkDomainId', None)
+        if 'ipAddressList' in existing_dst:
+            existing_fw_rule['destination']['ipAddressListId'] = existing_dst['ipAddressList']['id']
+        elif 'ip' in existing_dst:
+            existing_fw_rule['destination']['ip'] = {}
+            existing_fw_rule['destination']['ip']['address'] = existing_dst['ip']['address']
+            if 'prefixSize' in existing_dst['ip']:
+                existing_fw_rule['destination']['ip']['prefixSize'] = str(existing_dst['ip']['prefixSize'])
+        if 'portList' in existing_dst:
+            existing_fw_rule['destination']['portListId'] = existing_dst['portList']['id']
+        elif 'port' in existing_dst:
+            existing_fw_rule['destination']['port'] = {}
+            existing_fw_rule['destination']['port']['begin'] = str(existing_dst['port']['begin'])
+            if 'end' in existing_dst['port']:
+                existing_fw_rule['destination']['port']['end'] = str(existing_dst['port']['end'])
+        if 'ipAddressList' in existing_src:
+            existing_fw_rule['source']['ipAddressListId'] = existing_src['ipAddressList']['id']
+        elif 'ip' in existing_src:
+            existing_fw_rule['source']['ip'] = {}
+            existing_fw_rule['source']['ip']['address'] = existing_src['ip']['address']
+            if 'prefixSize' in existing_src['ip']:
+                existing_fw_rule['source']['ip']['prefixSize'] = str(existing_src['ip']['prefixSize'])
+        if 'portList' in existing_src:
+            existing_fw_rule['source']['portListId'] = existing_src['portList']['id']
+        elif 'port' in existing_src:
+            existing_fw_rule['source']['port'] = {}
+            existing_fw_rule['source']['port']['begin'] = str(existing_src['port']['begin'])
+            if 'end' in existing_src['port']:
+                existing_fw_rule['source']['port']['end'] = str(existing_src['port']['end'])
+
+        existing_fw_rule.pop('ruleType', None)
+        existing_fw_rule.pop('datacenterId', None)
+        existing_fw_rule.pop('state', None)
+        existing_fw_rule.pop('ipVersion', None)
+        existing_fw_rule.pop('name', None)
+        existing_fw_rule.pop('networkDomainId', None)
 
     return compare_json(new_fw_rule, existing_fw_rule, None)
 
@@ -619,7 +631,7 @@ def main():
             datacenter=dict(required=True, type='str'),
             name=dict(required=False, type='str'),
             network_domain=dict(required=True, type='str'),
-            action=dict(default='ACCEPT_DECISIVELY', choices=['ACCEPT_DECISIVELY', 'DENY']),
+            action=dict(default='ACCEPT_DECISIVELY', choices=['ACCEPT_DECISIVELY', 'DROP']),
             version=dict(required=False, default='IPV4', choices=['IPV4', 'IPV6']),
             protocol=dict(default='TCP', choices=['TCP', 'UDP', 'IP', 'ICMP']),
             src_cidr=dict(required=False, type='str'),

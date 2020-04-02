@@ -1581,7 +1581,6 @@ class NTTMCPClient():
         Enable and set vApp properties on a server
         """
         params = dict()
-        vapp = list()
 
         if server_id is None:
             raise NTTMCPAPIException('A valid server_id is required')
@@ -1637,11 +1636,10 @@ class NTTMCPClient():
         Remove vApp properties from a server
         """
         params = dict()
-        vapp_keys = list()
 
         if server_id is None:
             raise NTTMCPAPIException('A valid server_id is required')
-        if len(vapp_keys) <= 0:
+        if len(vapp_keys) == 0 or vapp_keys is None:
             raise NTTMCPAPIException('A least 1 vApp property key must be provided')
 
         params['serverId'] = server_id
@@ -3196,59 +3194,68 @@ class NTTMCPClient():
                 params['networkDomainId'] = network_domain_id
             if name:
                 params['name'] = name
+        try:
+            if src_ip_list_id:
+                params['source']['ipAddressListId'] = src_ip_list_id
+            elif 'source' in params:
+                params['source']['ip'] = {}
+                if src_ip == '0.0.0.0' and src_ip_prefix == '0':
+                    params['source']['ip']['address'] = 'ANY'
+                else:
+                    params['source']['ip']['address'] = src_ip
+                    if src_ip_prefix:
+                        params['source']['ip']['prefixSize'] = src_ip_prefix
+            if dst_ip_list_id:
+                params['destination']['ipAddressListId'] = dst_ip_list_id
+            elif 'source' in params:
+                params['destination']['ip'] = {}
+                if dst_ip == '0.0.0.0' and dst_ip_prefix == '0':
+                    params['destination']['ip']['address'] = 'ANY'
+                else:
+                    params['destination']['ip']['address'] = dst_ip
+                    if dst_ip_prefix:
+                        params['destination']['ip']['prefixSize'] = dst_ip_prefix
+            if src_port_list_id:
+                params['source']['portListId'] = src_port_list_id
+            else:
+                if src_port_begin != 'ANY' and src_port_begin:
+                    params['source']['port'] = {}
+                    params['source']['port']['begin'] = src_port_begin
+                    if src_port_end:
+                        params['source']['port']['end'] = src_port_end
+            if dst_port_list_id:
+                params['destination']['portListId'] = dst_port_list_id
+            else:
+                if dst_port_begin != 'ANY' and dst_port_begin:
+                    params['destination']['port'] = {}
+                    params['destination']['port']['begin'] = dst_port_begin
+                    if dst_port_end:
+                        params['destination']['port']['end'] = dst_port_end
 
-        if src_ip_list_id:
-            params['source']['ipAddressListId'] = src_ip_list_id
-        else:
-            params['source']['ip'] = {}
-            params['source']['ip']['address'] = src_ip
-            if src_ip_prefix:
-                params['source']['ip']['prefixSize'] = src_ip_prefix
-        if dst_ip_list_id:
-            params['destination']['ipAddressListId'] = dst_ip_list_id
-        else:
-            params['destination']['ip'] = {}
-            params['destination']['ip']['address'] = dst_ip
-            if dst_ip_prefix:
-                params['destination']['ip']['prefixSize'] = dst_ip_prefix
-        if src_port_list_id:
-            params['source']['portListId'] = src_port_list_id
-        else:
-            if src_port_begin != 'ANY' and src_port_begin:
-                params['source']['port'] = {}
-                params['source']['port']['begin'] = src_port_begin
-                if src_port_end:
-                    params['source']['port']['end'] = src_port_end
-        if dst_port_list_id:
-            params['destination']['portListId'] = dst_port_list_id
-        else:
-            if dst_port_begin != 'ANY' and dst_port_begin:
-                params['destination']['port'] = {}
-                params['destination']['port']['begin'] = dst_port_begin
-                if dst_port_end:
-                    params['destination']['port']['end'] = dst_port_end
+            # Configure the defaults
+            if create:
+                if position is None:
+                    position = 'LAST'
+                if position_to:
+                    params['placement']['relativeToRule'] = position_to
+                params['ipVersion'] = version
+                params['placement']['position'] = position
 
-        # Configure the defaults
-        if create:
-            if position is None:
-                position = 'LAST'
-            if position_to:
-                params['placement']['relativeToRule'] = position_to
-            params['ipVersion'] = version
-            params['placement']['position'] = position
+            if action is None:
+                action = 'ACCEPT_DECISIVELY'
+            if version is None:
+                version = 'IPV4'
+            if protocol is None:
+                protocol = 'TCP'
+            if enabled is None:
+                enabled = True
+            params['enabled'] = enabled
+            params['protocol'] = protocol
 
-        if action is None:
-            action = 'ACCEPT_DECISIVELY'
-        if version is None:
-            version = 'IPV4'
-        if protocol is None:
-            protocol = 'TCP'
-        if enabled is None:
-            enabled = True
-        params['enabled'] = enabled
-        params['protocol'] = protocol
+            params['action'] = action
 
-        params['action'] = action
+        except (KeyError, AttributeError, IndexError) as e:
+            raise NTTMCPAPIException("Could not create the firewall arguments: {0}".format(e))
 
         return params
 

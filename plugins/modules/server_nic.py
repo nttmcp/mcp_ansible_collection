@@ -141,6 +141,14 @@ options:
         required: false
         type: int
         default: 30
+    wait_for_vmtools:
+        description:
+            - Should Ansible wait for VMWare Tools to be running before continuing
+            - This should only be used for server images that are running VMWare Tools
+            - This should not be used for NGOC (Non Guest OS Customization) servers/images
+        required: false
+        type: bool
+        default: false
     state:
         description:
             - The action to be performed
@@ -805,11 +813,11 @@ def server_command(module, client, server, command):
             check_for_start = False
             check_for_stop = True
         if wait:
-            if command == 'start' or command == 'reboot':
+            if module.params.get('wait_for_vmtools') and (command == 'start' or command == 'reboot'):
                 # Temporarily enable waiting for VMWare Tools
                 CORE['wait_for_vmtools'] = True
             wait_for_server(module, client, name, datacenter, network_domain_id, 'NORMAL', check_for_start, check_for_stop, wait_poll_interval)
-            if command == 'start' or command == 'reboot':
+            if module.params.get('wait_for_vmtools') and (command == 'start' or command == 'reboot'):
                 # Disable any waiting for VMWare Tools
                 CORE['wait_for_vmtools'] = False
 
@@ -909,7 +917,8 @@ def main():
             start=dict(default=True, type='bool'),
             wait=dict(required=False, default=True, type='bool'),
             wait_time=dict(required=False, default=1200, type='int'),
-            wait_poll_interval=dict(required=False, default=30, type='int')
+            wait_poll_interval=dict(required=False, default=30, type='int'),
+            wait_for_vmtools=dict(required=False, default=False, type='bool')
         ),
         supports_check_mode=True
     )
@@ -1068,6 +1077,11 @@ def main():
     # Introduce a pause to allow the API to catch up in more remote MCP locations
     sleep(10)
     try:
+        server = client.get_server_by_name(datacenter, network_domain_id, None, name)
+        if server:
+            server_running = server.get('started')
+        else:
+            module.fail_json(msg='Failed to find the server to determine the final running state - {0}'.format(name))
         if start and not server_running:
             server_command(module, client, server, 'start')
         server = client.get_server_by_name(datacenter, network_domain_id, None, name)

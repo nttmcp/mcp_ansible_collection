@@ -8,7 +8,7 @@
 #   - Ken Sinfield (@kensinfield)
 #   - get_credentials from Aimon Bustardo <aimon.bustardo@dimensiondata.com>
 #
-# Common methods to be used by versious module components
+# Common methods to be used by various module components
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
