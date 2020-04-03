@@ -70,6 +70,11 @@ options:
             - The name of a Cloud Network Domain
         required: false
         type: str
+    network_domain_id:
+        description:
+            - The ID of a Cloud Network Domain.
+        required: false
+        type: str
     server:
         description:
             - The name of a server to enable Snapshots on
@@ -128,6 +133,15 @@ EXAMPLES = '''
   collections:
     - nttmcp.mcp
   tasks:
+
+  - name: Enable Snapshots at 8am
+    snapshot_service:
+      region: na
+      datacenter: NA9
+      network_domain_id: my_network_domain_uuid
+      name: My_Server
+      plan: ONE_MONTH
+      window: 8
 
   - name: Enable Snapshots at 8am
     snapshot_service:
@@ -391,6 +405,7 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(required=False, type='str'),
+            network_domain_id=dict(required=False, type='str'),
             server=dict(required=False, type='str'),
             server_id=dict(required=False, type='str'),
             plan=dict(required=False, default=None, type='str'),
@@ -413,7 +428,7 @@ def main():
     server_id = module.params.get('server_id')
     plan = module.params.get('plan')
     window_id = None
-    network_domain_id = None
+    network_domain_id = module.params.get('network_domain_id')
     take_snapshot = module.params.get('take_snapshot')
 
     # Check the region supplied is valid
@@ -430,7 +445,7 @@ def main():
         module.fail_json(msg=e.msg)
 
     # Get the CND
-    if server_id is None:
+    if server_id is None and network_domain_id is None:
         try:
             network = client.get_network_domain_by_name(name=network_domain_name, datacenter=datacenter)
             network_domain_id = network.get('id')
