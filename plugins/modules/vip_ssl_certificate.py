@@ -216,12 +216,12 @@ def import_ssl_cert(module, client, network_domain_id):
             import_result = client.import_ssl_cert(network_domain_id,
                                                    name,
                                                    description,
-                                                   crypto.dump_certificate(crypto.FILETYPE_PEM, cert),
-                                                   crypto.dump_privatekey(crypto.FILETYPE_PEM, cert_key))
+                                                   crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode('UTF-8'),
+                                                   crypto.dump_privatekey(crypto.FILETYPE_PEM, cert_key).decode('UTF-8'))
         elif ssl_type == 'chain':
             import_result = client.import_ssl_cert_chain(network_domain_id,
                                                          name, description,
-                                                         crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+                                                         crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode('UTF-8'))
     except (KeyError, IndexError, AttributeError, NTTMCPAPIException) as exc:
         module.fail_json(msg='Could not import the SSL certificate/chain - {0}'.format(exc))
 
