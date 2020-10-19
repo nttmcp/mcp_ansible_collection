@@ -936,6 +936,8 @@ def create_server(module, client):
                         datacenter=module.params['datacenter']
                     )['id']
                 )
+            elif CORE.get('network_domain_id'):
+                params['networkInfo']['networkDomainId'] = CORE.get('network_domain_id')
             else:
                 module.fail_json(msg='A Cloud Network Domain is required.')
             if 'networkAdapter' in network['primary_nic']:
