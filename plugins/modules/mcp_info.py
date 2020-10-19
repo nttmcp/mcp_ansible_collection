@@ -80,11 +80,11 @@ EXAMPLES = '''
   tasks:
 
   - name: GET a list of MCPs
-    mcp_facts:
+    mcp_info:
       region: na
 
   - name: Get details on a specific MCP
-    mcp_facts:
+    mcp_info:
       region: na
       name: NA9
 '''
