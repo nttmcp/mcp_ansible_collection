@@ -74,6 +74,7 @@ options:
             - List of server names to search for
         required: true
         type: list
+        elements: str
     state:
         description:
             - The action to be performed
