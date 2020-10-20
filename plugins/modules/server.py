@@ -22,7 +22,7 @@ module: server
 short_description: Create, Update and Delete Servers
 description:
     - Create, Update and Delete Servers
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -189,6 +189,7 @@ options:
                     - Required if a primary_nic is supplied
                 required: false
                 type: list
+                elements: dict
                 suboptions:
                     networkAdapter:
                         description:
@@ -235,6 +236,7 @@ options:
             - List of disk objects containing
         required: false
         type: list
+        elements: dict
         suboptions:
             controller_type:
                 description:
@@ -1115,14 +1117,18 @@ def compare_server(module, server):
         params['cpu']['count'] = int(module.params.get('cpu').get('count', server.get('cpu').get('count')))
         params['cpu']['coresPerSocket'] = int(module.params.get('cpu').get('coresPerSocket', server.get('cpu').get('coresPerSocket')))
     if module.params.get('avs'):
-        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = module.params.get('avs').get('nestedHardwareVirtualization',
-                                                                                                                params['advancedVirtualizationSettings']['nestedHardwareVirtualization'])
-        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = module.params.get('avs').get('cpuLatencySensitivity',
-                                                                                                         params['advancedVirtualizationSettings']['cpuLatencySensitivity'])
-        params['advancedVirtualizationSettings']['numaAutosize'] = module.params.get('avs').get('numaAutosize',
-                                                                                                params['advancedVirtualizationSettings']['numaAutosize'])
-        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = module.params.get('avs').get('enableHostInfoToVmTools',
-                                                                                                           params['advancedVirtualizationSettings']['enableHostInfoToVmTools'])
+        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = (
+            module.params.get('avs').get('nestedHardwareVirtualization',
+                                         params['advancedVirtualizationSettings']['nestedHardwareVirtualization']))
+        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = (
+            module.params.get('avs').get('cpuLatencySensitivity',
+                                         params['advancedVirtualizationSettings']['cpuLatencySensitivity']))
+        params['advancedVirtualizationSettings']['numaAutosize'] = (
+            module.params.get('avs').get('numaAutosize',
+                                         params['advancedVirtualizationSettings']['numaAutosize']))
+        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = (
+            module.params.get('avs').get('enableHostInfoToVmTools',
+                                         params['advancedVirtualizationSettings']['enableHostInfoToVmTools']))
     if module.params['memory_gb']:
         params['memoryGb'] = module.params.get('memory_gb')
 
@@ -1510,7 +1516,7 @@ def main():
             secondary_dns=dict(required=False, type='str'),
             ipv4_gw=dict(required=False, type='str'),
             ipv6_gw=dict(required=False, type='str'),
-            disks=dict(required=False, type='list'),
+            disks=dict(required=False, type='list', elements='dict'),
             disk_id=dict(required=False, type='str'),
             disk_size=dict(required=False, type='int'),
             disk_iops=dict(required=False, type='int'),

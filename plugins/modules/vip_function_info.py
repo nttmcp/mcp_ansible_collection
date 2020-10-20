@@ -22,7 +22,7 @@ module: vip_function_info
 short_description: Get information on VIP support functions
 description:
     - Get information on VIP support functions
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

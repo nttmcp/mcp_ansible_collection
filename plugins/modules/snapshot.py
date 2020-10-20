@@ -21,7 +21,7 @@ module: snapshot
 short_description: Initiate, update or delete a manual snapshot on a server
 description:
     - Initiate a manual snapshot on a server
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

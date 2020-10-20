@@ -22,7 +22,7 @@ module: firewall_info
 short_description: List/Get Firewall rules
 description:
     - List/Get Firewall rules
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

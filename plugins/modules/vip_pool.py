@@ -23,7 +23,7 @@ short_description: Create, update and delete VIP Pools
 description:
     - Create, update and delete VIP Pools
     - It is quicker to use the option "id" to locate the VIP Pool if the UUID is known rather than search by name
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -136,6 +136,7 @@ options:
             - A list of member objects for this VIP pool
         required: false
         type: list
+        elements: dict
         suboptions:
             name:
                 description:
@@ -534,7 +535,7 @@ def main():
             load_balancing=dict(required=False, default='ROUND_ROBIN', type='str'),
             service_down_action=dict(required=False, default='NONE', type='str'),
             slow_ramp_time=dict(required=False, default=10, type='int'),
-            members=dict(default=None, required=False, type='list'),
+            members=dict(default=None, required=False, type='list', elements='dict'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

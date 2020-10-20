@@ -22,7 +22,7 @@ module: server_info
 short_description: Get and List Servers
 description:
     - Get and List Servers
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -22,7 +22,7 @@ module: vip_node
 short_description: Create, Update and Delete VIP Nodes
 description:
     - Create, Update and Delete VIP Nodes
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -24,7 +24,7 @@ description:
     - Alter the disk configuration for an existing server
     - The controller must exist before trying to add a disk of that type. E.g. If no IDE controller exists on a server,
     - trying to add a disk here using a controller type of IDE will fail
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
