@@ -23,7 +23,7 @@ description:
     - Create, Update and Delete server Anti-Affinity Groups
     - Currently servers can only belong to a single Anti-Affinity Group
     - https://docs.mcp-services.net/x/YgIu
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -74,6 +74,7 @@ options:
             - List of server names to search for
         required: true
         type: list
+        elements: str
     state:
         description:
             - The action to be performed
@@ -221,7 +222,7 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(required=True, type='str'),
-            servers=dict(required=True, type='list'),
+            servers=dict(required=True, type='list', elements='str'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

@@ -22,7 +22,7 @@ module: ipam_public
 short_description: IP Address Management
 description:
     - IP Address Management
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

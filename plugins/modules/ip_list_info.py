@@ -22,7 +22,7 @@ module: ip_list_info
 short_description: List and Get IP Address Lists
 description:
     - List and Get IP Address Lists
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -21,7 +21,7 @@ module: snapshot_script
 short_description: Enable/Disable and Update the Snapshot Service on a server
 description:
     - Enable/Disable and Update the Snapshot Service on a server
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

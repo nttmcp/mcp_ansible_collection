@@ -22,7 +22,7 @@ module: ipam_info
 short_description: IP Address Management Facts
 description:
     - IP Address Management Facts
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

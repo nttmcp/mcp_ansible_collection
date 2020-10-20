@@ -22,7 +22,7 @@ module: firewall
 short_description: Create, Modify and Delete Firewall rules
 description:
     - Create, Modify and Delete Firewall rules
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

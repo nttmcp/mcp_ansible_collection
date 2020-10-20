@@ -23,7 +23,7 @@ description:
     - Get and List Server Anti-Affinity Groups
     - Currently servers can only belong to a single Anti-Affinity Group
     - https://docs.mcp-services.net/x/YgIu
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -74,6 +74,7 @@ options:
             - List of server names to search for
         required: false
         type: list
+        elements: str
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:
@@ -211,7 +212,7 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(default=None, type='str'),
-            servers=dict(default=list(), type='list'),
+            servers=dict(default=list(), type='list', elements='str'),
         ),
         supports_check_mode=True
     )

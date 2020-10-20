@@ -23,7 +23,7 @@ short_description: Create, update and delete VIP Virtual Listeners
 description:
     - Create, update and delete VIP Virtual Listeners
     - It is quicker to use the option "id" to locate the VIP Listener if the UUID is known rather than search by name
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -176,6 +176,7 @@ options:
             - actions.
         required: false
         type: list
+        elements: str
     ssl_offload_profile:
         description:
             - The name of an SSL Offload Profile
@@ -617,7 +618,7 @@ def main():
             fallback_persistence_profile=dict(required=False, default=None, type='str'),
             optimization_profile=dict(required=False, default=None, type='str'),
             ssl_offload_profile=dict(required=False, default=None, type='str'),
-            irules=dict(required=False, default=None, type='list'),
+            irules=dict(required=False, default=None, type='list', elements='str'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

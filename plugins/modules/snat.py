@@ -22,7 +22,7 @@ module: snat
 short_description: Add and Remove SNAT exclusions entries for a Cloud Network Domain
 description:
     - Add and Remove SNAT exclusions entries for a Cloud Network Domain
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -22,7 +22,7 @@ module: geo_info
 short_description: Get NTT LTD Cloud Geo Information
 description:
     - Get NTT LTD Cloud Information
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

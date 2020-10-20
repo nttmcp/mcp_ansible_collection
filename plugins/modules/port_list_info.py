@@ -22,7 +22,7 @@ module: port_list_info
 short_description: List/Get Firewall Port Lists
 description:
     - List/Get Firewall Port Lists
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -22,7 +22,7 @@ module: ansible_gw
 short_description: List, Create and Destory an Ansible Bastion Host
 description:
     - List, Create and Destory an Ansible Bastion Host
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

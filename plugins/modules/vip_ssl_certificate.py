@@ -25,7 +25,7 @@ description:
     - Certificates/Chains cannot be updated or removed while still associated with an SSL Offload Profile
     - Adding certifications/chains can also be done a single step as part of creating an SSL Offload Profile using
     - vip_ssl
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

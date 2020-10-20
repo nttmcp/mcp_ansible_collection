@@ -22,7 +22,7 @@ module: ip_list
 short_description: Create, update and delete IP Address Lists
 description:
     - Create, update and delete IP Address Lists
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -83,6 +83,7 @@ options:
             - List of IP Addresses with begin, end or prefix
         required: false
         type: list
+        elements: str
     ip_addresses_nil:
         description:
             - Used on updating to remove all IP addresses
@@ -93,6 +94,7 @@ options:
             - List of IP adddress UUIDs to be included in this ip address
         required: false
         type: list
+        elements: str
     child_ip_lists_nil:
         description:
             - Used on updating to remove all child IP address lists
@@ -431,9 +433,9 @@ def main():
             name=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
             version=dict(required=False, default='IPV4', type='str', choices=['IPV4', 'IPV6']),
-            ip_addresses=dict(required=False, type='list'),
+            ip_addresses=dict(required=False, type='list', elements='str'),
             ip_addresses_nil=dict(required=False, default=False, type='bool'),
-            child_ip_lists=dict(required=False, type='list'),
+            child_ip_lists=dict(required=False, type='list', elements='str'),
             child_ip_lists_nil=dict(required=False, default=False, type='bool'),
             network_domain=dict(required=True, type='str'),
             state=dict(default='present', choices=['present', 'absent'])

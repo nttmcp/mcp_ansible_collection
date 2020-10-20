@@ -22,7 +22,7 @@ module: network
 short_description: Create, Update and Delete Cloud Network Domains (CND)
 description:
     - Create, Update and Delete Cloud Network Domains (CND)
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

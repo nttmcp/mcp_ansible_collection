@@ -23,7 +23,7 @@ short_description: Enable/Disable and set/delete vApp properties on a server
 description:
     - Enable/Disable and set/delete vApp properties on a server
     - https://docs.mcp-services.net/x/qIAkAQ
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -93,6 +93,7 @@ options:
             - List of vApp property objects
         required: false
         type: list
+        elements: dict
         suboptions:
             key:
                 description:
@@ -535,7 +536,7 @@ def main():
             server=dict(required=True, type='str'),
             iso=dict(required=False, default=False, type='bool'),
             vmtools=dict(required=False, default=True, type='bool'),
-            vapp=dict(required=False, default=None, type='list'),
+            vapp=dict(required=False, default=None, type='list', elements='dict'),
             wait=dict(required=False, default=True, type='bool'),
             wait_time=dict(required=False, default=600, type='int'),
             wait_poll_interval=dict(required=False, default=5, type='int'),

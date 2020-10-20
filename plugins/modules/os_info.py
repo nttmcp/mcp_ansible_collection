@@ -22,7 +22,7 @@ module: os_info
 short_description: Get NTT LTD Supported Operating System Information
 description:
     - Get NTT LTD Supported Operating System Information
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

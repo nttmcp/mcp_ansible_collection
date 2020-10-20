@@ -24,7 +24,7 @@ description:
     - Export a customer image in Cloud Control to an OVF for download
     - For large images, set a higher wait_time to ensure Ansible will wait for the complete export or set wait == False
     - https://docs.mcp-services.net/x/rgMk
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

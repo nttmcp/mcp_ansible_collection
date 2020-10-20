@@ -23,7 +23,7 @@ short_description: Import a custom OVF into Cloud Control
 description:
     - Import a custom OVF into Cloud Control or delete an existing imported OVF
     - For large images, set a higher wait_time to ensure Ansible will wait for the complete import or set wait == False
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

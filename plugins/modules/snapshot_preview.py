@@ -23,7 +23,7 @@ description:
     - Create and migrate local and remote Snapshot Preview servers
     - Refer to the Snapshot service documentation at https://docs.mcp-services.net/x/DoBk
     - Documentation for creating a Preview server via the Cloud Control UI https://docs.mcp-services.net/x/GIBk
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
@@ -117,6 +117,7 @@ options:
             - List of dictionary objects containing network information when creating remote/replicated Preview server
         required: false
         type: list
+        elements: dict
         suboptions:
             nic:
                 description:
@@ -422,7 +423,7 @@ def main():
             start=dict(required=False, default=False, type='bool'),
             connect_nics=dict(required=False, default=False, type='bool'),
             preserve_mac=dict(required=False, default=False, type='bool'),
-            networks=dict(required=False, default=None, type='list'),
+            networks=dict(required=False, default=None, type='list', elements='dict'),
             wait=dict(required=False, default=True, type='bool'),
             wait_time=dict(required=False, default=1800, type='int'),
             wait_poll_interval=dict(required=False, default=30, type='int'),

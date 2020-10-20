@@ -22,7 +22,7 @@ short_description: Add Server or NICs to a Security Group
 description:
     - Create, Add Server or NICs to a Security Group
     - https://docs.mcp-services.net/x/NgMu
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
