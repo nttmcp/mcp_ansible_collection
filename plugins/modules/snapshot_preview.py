@@ -117,6 +117,7 @@ options:
             - List of dictionary objects containing network information when creating remote/replicated Preview server
         required: false
         type: list
+        elements: dict
         suboptions:
             nic:
                 description:

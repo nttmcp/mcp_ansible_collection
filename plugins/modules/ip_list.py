@@ -83,6 +83,7 @@ options:
             - List of IP Addresses with begin, end or prefix
         required: false
         type: list
+        elements: str
     ip_addresses_nil:
         description:
             - Used on updating to remove all IP addresses
@@ -93,6 +94,7 @@ options:
             - List of IP adddress UUIDs to be included in this ip address
         required: false
         type: list
+        elements: str
     child_ip_lists_nil:
         description:
             - Used on updating to remove all child IP address lists

@@ -93,6 +93,7 @@ options:
             - List of vApp property objects
         required: false
         type: list
+        elements: dict
         suboptions:
             key:
                 description:

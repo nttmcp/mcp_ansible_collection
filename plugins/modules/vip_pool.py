@@ -136,6 +136,7 @@ options:
             - A list of member objects for this VIP pool
         required: false
         type: list
+        elements: dict
         suboptions:
             name:
                 description:

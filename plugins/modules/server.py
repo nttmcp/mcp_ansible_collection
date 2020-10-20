@@ -189,6 +189,7 @@ options:
                     - Required if a primary_nic is supplied
                 required: false
                 type: list
+                elements: dict
                 suboptions:
                     networkAdapter:
                         description:
@@ -235,6 +236,7 @@ options:
             - List of disk objects containing
         required: false
         type: list
+        elements: dict
         suboptions:
             controller_type:
                 description:

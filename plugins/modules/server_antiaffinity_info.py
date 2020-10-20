@@ -74,6 +74,7 @@ options:
             - List of server names to search for
         required: false
         type: list
+        elements: str
 notes:
     - Requires NTT Ltd. MCP account/credentials
 requirements:

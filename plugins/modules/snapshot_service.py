@@ -78,12 +78,12 @@ options:
     server:
         description:
             - The name of a server to enable Snapshots on
-        required: true
+        required: false
         type: str
     server_id:
         description:
             - The UUID of a server to enable Snapshots on. Takes precendence over a server name
-        required: true
+        required: false
         type: str
     plan:
         description:

@@ -60,7 +60,7 @@ options:
     username:
         description:
             - The username to retrieve
-        required: false
+        required: true
         type: str
     my_user:
         description:
@@ -136,6 +136,7 @@ options:
             - List of roles for the user
         required: false
         type: list
+        elements: str
     state:
         description:
             - The action to be performed

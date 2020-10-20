@@ -176,6 +176,7 @@ options:
             - actions.
         required: false
         type: list
+        elements: str
     ssl_offload_profile:
         description:
             - The name of an SSL Offload Profile

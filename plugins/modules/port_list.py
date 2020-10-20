@@ -83,6 +83,7 @@ options:
             - List of port groups with port_begin and optionally port_end
         required: false
         type: list
+        elements: str
     ports_nil:
         description:
             - Used on updating to remove all ports
@@ -94,6 +95,7 @@ options:
             - List of port list names that will be included in this port list
         required: false
         type: list
+        elements: str
     child_port_lists_nil:
         description:
             - Used on updating to remove all child port lists
