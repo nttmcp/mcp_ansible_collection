@@ -217,23 +217,23 @@ data:
             contains:
                 userName:
                     description: The user ID
-                    type: string
+                    type: str
                     sample: mysusername
                 firstName:
                     description: The user's firstname
-                    type: string
+                    type: str
                     sample: John
                 lastName:
                     description: The user's lastname
-                    type: string
+                    type: str
                     sample: Doe
                 state:
                     description: The user's status
-                    type: string
+                    type: str
                     sample: NORMAL
                 emailAddress:
                     description: The user's email address
-                    type: string
+                    type: str
                     sample: john.doe@abc.local
                 organization:
                     description: Organizational level information about the user
@@ -241,27 +241,27 @@ data:
                     contains:
                         homeGeoApiHost:
                             description: The user's home Geo API host
-                            type: string
+                            type: str
                             sample: api-na.mcp-services.net
                         homeGeoName:
                             description: The name of the home Geo
-                            type: string
+                            type: str
                             sample: North America
                         id:
                             description: The UUID of the home Geo
-                            type: string
+                            type: str
                             sample: b2fbd7e6-ddbb-4eb6-a2dd-ad048bc5b9ae
                         homeGeoId:
                             description: The home Geo ID
-                            type: string
+                            type: str
                             sample: northamerica
                         name:
                             description: The organization name
-                            type: string
+                            type: str
                             sample: myorg
                 fullName:
                     description: The user's full name
-                    type: string
+                    type: str
                     sample: John Doe
                 role:
                     description: List of access roles associated with the user
