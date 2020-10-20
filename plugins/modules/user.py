@@ -212,6 +212,8 @@ data:
             sample: 1
         user:
             description: User Object
+            returned: success
+            type: complex
             contains:
                 userName:
                     description: The user ID
