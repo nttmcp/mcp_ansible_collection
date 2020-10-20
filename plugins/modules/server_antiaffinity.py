@@ -221,7 +221,7 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(required=True, type='str'),
-            servers=dict(required=True, type='list'),
+            servers=dict(required=True, type='list', elements='str'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

@@ -212,7 +212,7 @@ def main():
             region=dict(default='na', type='str'),
             datacenter=dict(required=True, type='str'),
             network_domain=dict(default=None, type='str'),
-            servers=dict(default=list(), type='list'),
+            servers=dict(default=list(), type='list', elements='str'),
         ),
         supports_check_mode=True
     )

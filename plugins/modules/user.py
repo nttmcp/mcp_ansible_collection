@@ -486,7 +486,7 @@ def main():
             my_user=dict(default=False, type='bool'),
             password=dict(required=False, type='str'),
             new_password=dict(required=False, type='str'),
-            roles=dict(required=False, type='list'),
+            roles=dict(required=False, type='list', elements='str'),
             fullname=dict(default=None, type='str'),
             firstname=dict(default=None, type='str'),
             lastname=dict(default=None, type='str'),

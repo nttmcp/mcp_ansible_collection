@@ -1516,7 +1516,7 @@ def main():
             secondary_dns=dict(required=False, type='str'),
             ipv4_gw=dict(required=False, type='str'),
             ipv6_gw=dict(required=False, type='str'),
-            disks=dict(required=False, type='list'),
+            disks=dict(required=False, type='list', elements='dict'),
             disk_id=dict(required=False, type='str'),
             disk_size=dict(required=False, type='int'),
             disk_iops=dict(required=False, type='int'),

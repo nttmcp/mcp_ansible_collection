@@ -535,7 +535,7 @@ def main():
             load_balancing=dict(required=False, default='ROUND_ROBIN', type='str'),
             service_down_action=dict(required=False, default='NONE', type='str'),
             slow_ramp_time=dict(required=False, default=10, type='int'),
-            members=dict(default=None, required=False, type='list'),
+            members=dict(default=None, required=False, type='list', elements='dict'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

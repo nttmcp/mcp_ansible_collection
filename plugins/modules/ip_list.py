@@ -1,4 +1,4 @@
-#!/usr/bin/python
+, elements='dict'#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, NTT Ltd.
@@ -433,9 +433,9 @@ def main():
             name=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
             version=dict(required=False, default='IPV4', type='str', choices=['IPV4', 'IPV6']),
-            ip_addresses=dict(required=False, type='list'),
+            ip_addresses=dict(required=False, type='list', elements='str'),
             ip_addresses_nil=dict(required=False, default=False, type='bool'),
-            child_ip_lists=dict(required=False, type='list'),
+            child_ip_lists=dict(required=False, type='list', elements='str'),
             child_ip_lists_nil=dict(required=False, default=False, type='bool'),
             network_domain=dict(required=True, type='str'),
             state=dict(default='present', choices=['present', 'absent'])

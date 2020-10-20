@@ -423,7 +423,7 @@ def main():
             start=dict(required=False, default=False, type='bool'),
             connect_nics=dict(required=False, default=False, type='bool'),
             preserve_mac=dict(required=False, default=False, type='bool'),
-            networks=dict(required=False, default=None, type='list'),
+            networks=dict(required=False, default=None, type='list', elements='dict'),
             wait=dict(required=False, default=True, type='bool'),
             wait_time=dict(required=False, default=1800, type='int'),
             wait_poll_interval=dict(required=False, default=30, type='int'),

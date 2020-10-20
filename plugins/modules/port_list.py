@@ -83,7 +83,7 @@ options:
             - List of port groups with port_begin and optionally port_end
         required: false
         type: list
-        elements: str
+        elements: int
     ports_nil:
         description:
             - Used on updating to remove all ports
@@ -371,9 +371,9 @@ def main():
             network_domain=dict(required=True, type='str'),
             name=dict(required=True, type='str'),
             description=dict(required=False, type='str'),
-            ports=dict(required=False, type='list'),
+            ports=dict(required=False, type='list', elements='int'),
             ports_nil=dict(required=False, default=False, type='bool'),
-            child_port_lists=dict(required=False, type='list'),
+            child_port_lists=dict(required=False, type='list', elements='str'),
             child_port_lists_nil=dict(required=False, default=False, type='bool'),
             state=dict(default='present', choices=['present', 'absent'])
         ),

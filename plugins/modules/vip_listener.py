@@ -618,7 +618,7 @@ def main():
             fallback_persistence_profile=dict(required=False, default=None, type='str'),
             optimization_profile=dict(required=False, default=None, type='str'),
             ssl_offload_profile=dict(required=False, default=None, type='str'),
-            irules=dict(required=False, default=None, type='list'),
+            irules=dict(required=False, default=None, type='list', elements='str'),
             state=dict(default='present', required=False, choices=['present', 'absent'])
         ),
         supports_check_mode=True

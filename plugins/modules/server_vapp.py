@@ -536,7 +536,7 @@ def main():
             server=dict(required=True, type='str'),
             iso=dict(required=False, default=False, type='bool'),
             vmtools=dict(required=False, default=True, type='bool'),
-            vapp=dict(required=False, default=None, type='list'),
+            vapp=dict(required=False, default=None, type='list', elements='dict'),
             wait=dict(required=False, default=True, type='bool'),
             wait_time=dict(required=False, default=600, type='int'),
             wait_poll_interval=dict(required=False, default=5, type='int'),
