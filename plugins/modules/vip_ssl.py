@@ -22,7 +22,7 @@ module: vip_ssl
 short_description: Create, Update and Delete VIP SSL Offload Profile Configuration
 description:
     - Create, Update and Delete VIP SSL Offload Profile Configuration
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

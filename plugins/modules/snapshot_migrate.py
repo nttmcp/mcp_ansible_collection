@@ -22,7 +22,7 @@ short_description: Migrate a server currently in preview mode to a production se
 description:
     - Migrate a server currently in preview mode to a production server
     - Refer to the Snapshot service documentation at https://docs.mcp-services.net/x/DoBk
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

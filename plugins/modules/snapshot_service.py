@@ -24,7 +24,7 @@ description:
     - When disabling snapshot replication on a server it can take 2-4 hours for this process to finish even if though
     - the tasks returns immediately. Disabling the snapshot service on a server requires that snapshot replication is
     - already disabled.
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

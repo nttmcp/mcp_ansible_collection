@@ -22,7 +22,7 @@ module: nat_info
 short_description: List NAT entries
 description:
     - List NAT entries
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

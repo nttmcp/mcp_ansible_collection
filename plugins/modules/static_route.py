@@ -22,7 +22,7 @@ module: static_route
 short_description: Add and Remove static route entries for a Cloud Network Domain
 description:
     - Add and Remove static route entries for a Cloud Network Domain
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

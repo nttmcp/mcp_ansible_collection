@@ -23,7 +23,7 @@ description:
     - Get and List Server Anti-Affinity Groups
     - Currently servers can only belong to a single Anti-Affinity Group
     - https://docs.mcp-services.net/x/YgIu
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

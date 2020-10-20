@@ -23,7 +23,7 @@ description:
     - Create and migrate local and remote Snapshot Preview servers
     - Refer to the Snapshot service documentation at https://docs.mcp-services.net/x/DoBk
     - Documentation for creating a Preview server via the Cloud Control UI https://docs.mcp-services.net/x/GIBk
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

@@ -22,7 +22,7 @@ short_description: Get and List Security Groups
 description:
     - Get and List Security Groups
     - https://docs.mcp-services.net/x/NgMu
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

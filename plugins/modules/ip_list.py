@@ -22,7 +22,7 @@ module: ip_list
 short_description: Create, update and delete IP Address Lists
 description:
     - Create, update and delete IP Address Lists
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

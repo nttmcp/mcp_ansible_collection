@@ -23,7 +23,7 @@ short_description: Enable/Disable and set/delete vApp properties on a server
 description:
     - Enable/Disable and set/delete vApp properties on a server
     - https://docs.mcp-services.net/x/qIAkAQ
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

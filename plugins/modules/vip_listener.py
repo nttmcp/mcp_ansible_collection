@@ -23,7 +23,7 @@ short_description: Create, update and delete VIP Virtual Listeners
 description:
     - Create, update and delete VIP Virtual Listeners
     - It is quicker to use the option "id" to locate the VIP Listener if the UUID is known rather than search by name
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

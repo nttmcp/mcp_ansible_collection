@@ -23,7 +23,7 @@ short_description: Clone an existing server to a customer image
 description:
     - Clone an existing server to a customer image
     - https://docs.mcp-services.net/x/pwMk
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

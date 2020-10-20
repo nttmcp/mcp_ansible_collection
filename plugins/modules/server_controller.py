@@ -22,7 +22,7 @@ module: server_controller
 short_description: Add or remove a disk controller configuration for an existing server
 description:
     - Add or remove a disk controller configuration for an existing server
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

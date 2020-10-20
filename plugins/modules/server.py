@@ -22,7 +22,7 @@ module: server
 short_description: Create, Update and Delete Servers
 description:
     - Create, Update and Delete Servers
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

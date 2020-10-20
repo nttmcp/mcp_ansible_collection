@@ -22,7 +22,7 @@ module: image_info
 short_description: Get available server images information
 description:
     - Get available server images information
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

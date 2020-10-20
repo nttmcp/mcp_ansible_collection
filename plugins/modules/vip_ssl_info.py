@@ -23,7 +23,7 @@ short_description: List/Get VIP SSL Configuration
 description:
     - List/Get VIP SSL Configuration
     - It is quicker to use the option "id" to locate the SSL configuration if the UUID is known rather than search by name
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

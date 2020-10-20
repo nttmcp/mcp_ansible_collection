@@ -22,7 +22,7 @@ module: vlan
 short_description: List, Create, Update, Delete VLANs
 description:
     - Get, Create, Delete VLANs
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:

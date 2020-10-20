@@ -22,7 +22,7 @@ module: ipam_reserve
 short_description: Reserve an IP Address in IP Address Management
 description:
     - Reserve an IP Address in IP Address Management
-version_added: "2.10"
+version_added: "2.10.0"
 author:
     - Ken Sinfield (@kensinfield)
 options:
