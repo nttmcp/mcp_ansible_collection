@@ -1115,14 +1115,18 @@ def compare_server(module, server):
         params['cpu']['count'] = int(module.params.get('cpu').get('count', server.get('cpu').get('count')))
         params['cpu']['coresPerSocket'] = int(module.params.get('cpu').get('coresPerSocket', server.get('cpu').get('coresPerSocket')))
     if module.params.get('avs'):
-        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = module.params.get('avs').get('nestedHardwareVirtualization',
-                                                                                                                params['advancedVirtualizationSettings']['nestedHardwareVirtualization'])
-        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = module.params.get('avs').get('cpuLatencySensitivity',
-                                                                                                         params['advancedVirtualizationSettings']['cpuLatencySensitivity'])
-        params['advancedVirtualizationSettings']['numaAutosize'] = module.params.get('avs').get('numaAutosize',
-                                                                                                params['advancedVirtualizationSettings']['numaAutosize'])
-        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = module.params.get('avs').get('enableHostInfoToVmTools',
-                                                                                                           params['advancedVirtualizationSettings']['enableHostInfoToVmTools'])
+        params['advancedVirtualizationSettings']['nestedHardwareVirtualization'] = (
+            module.params.get('avs').get('nestedHardwareVirtualization',
+                                         params['advancedVirtualizationSettings']['nestedHardwareVirtualization']))
+        params['advancedVirtualizationSettings']['cpuLatencySensitivity'] = (
+            module.params.get('avs').get('cpuLatencySensitivity',
+                                         params['advancedVirtualizationSettings']['cpuLatencySensitivity']))
+        params['advancedVirtualizationSettings']['numaAutosize'] = (
+            module.params.get('avs').get('numaAutosize',
+                                         params['advancedVirtualizationSettings']['numaAutosize']))
+        params['advancedVirtualizationSettings']['enableHostInfoToVmTools'] = (
+            module.params.get('avs').get('enableHostInfoToVmTools',
+                                         params['advancedVirtualizationSettings']['enableHostInfoToVmTools']))
     if module.params['memory_gb']:
         params['memoryGb'] = module.params.get('memory_gb')
 
