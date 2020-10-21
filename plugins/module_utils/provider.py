@@ -3734,6 +3734,8 @@ class NTTMCPClient():
 
         if name:
             params['name'] = name
+        if network_domain_id:
+            params['networkDomainId'] = network_domain_id
 
         url = self.base_url + 'networkDomainVip/{0}'.format(ssl_type)
 
