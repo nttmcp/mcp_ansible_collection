@@ -83,7 +83,7 @@ options:
             - List of IP Addresses with begin, end or prefix
         required: false
         type: list
-        elements: str
+        elements: dict
     ip_addresses_nil:
         description:
             - Used on updating to remove all IP addresses
@@ -433,7 +433,7 @@ def main():
             name=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
             version=dict(required=False, default='IPV4', type='str', choices=['IPV4', 'IPV6']),
-            ip_addresses=dict(required=False, type='list', elements='str'),
+            ip_addresses=dict(required=False, type='list', elements='dict'),
             ip_addresses_nil=dict(required=False, default=False, type='bool'),
             child_ip_lists=dict(required=False, type='list', elements='str'),
             child_ip_lists_nil=dict(required=False, default=False, type='bool'),

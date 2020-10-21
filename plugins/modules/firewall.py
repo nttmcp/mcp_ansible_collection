@@ -558,7 +558,7 @@ def delete_fw_rule(module, client, network_domain_id, name):
         client.remove_fw_rule(fw_rule['id'])
     except NTTMCPAPIException as e:
         module.fail_json(msg='Could not delete the firewall rule - {0}'.format(e), exception=traceback.format_exc())
-    except (KeyError, AttributeError):
+    except (KeyError, AttributeError) as e:
         module.fail_json(msg='Could not find the firewall rule - {0}'.format(e), exception=traceback.format_exc())
 
     module.exit_json(changed=True, msg='Firewall rule successfully removed')
